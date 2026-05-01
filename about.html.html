@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>عن اللعبة | Infinity Race</title>
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0;font-family:Tahoma,Arial}
+
+body{
+  min-height:100vh;
+  background:radial-gradient(circle at top,#1e3a8a 0%,#0f172a 45%,#020617 100%);
+  color:white;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  padding:20px;
+}
+
+.box{
+  max-width:700px;
+  width:100%;
+  background:rgba(15,23,42,.9);
+  border-radius:30px;
+  padding:35px 25px;
+  border:1px solid rgba(255,255,255,.1);
+  box-shadow:0 0 60px rgba(59,130,246,.25),0 25px 80px rgba(0,0,0,.7);
+}
+
+.title-ar{
+  text-align:center;
+  font-size:42px;
+  color:#facc15;
+  margin-bottom:10px;
+  text-shadow:0 0 20px rgba(250,204,21,.5);
+}
+
+.title-en{
+  text-align:center;
+  font-size:36px;
+  color:#38bdf8;
+  margin-bottom:10px;
+  text-shadow:0 0 20px rgba(56,189,248,.4);
+}
+
+.section{
+  background:linear-gradient(180deg,rgba(2,6,23,.7),rgba(15,23,42,.6));
+  border-radius:18px;
+  padding:18px;
+  margin-top:15px;
+  border:1px solid rgba(148,163,184,.2);
+}
+
+p{
+  color:#e2e8f0;
+  line-height:1.9;
+  font-size:16px;
+}
+
+.en{
+  direction:ltr;
+  text-align:left;
+}
+
+.divider{
+  height:2px;
+  background:linear-gradient(to right,transparent,#38bdf8,transparent);
+  margin:30px 0;
+}
+
+.btn{
+  display:block;
+  width:240px;
+  margin:30px auto 0;
+  padding:15px;
+  background:linear-gradient(180deg,#22c55e,#15803d);
+  color:white;
+  text-decoration:none;
+  border-radius:16px;
+  font-weight:bold;
+  text-align:center;
+  box-shadow:
+    0 8px 0 rgba(0,0,0,.3),
+    0 0 25px rgba(34,197,94,.4);
+  transition:all .2s ease;
+  animation:glowPulse 2s infinite;
+}
+
+.btn:hover{
+  transform:scale(1.08);
+  box-shadow:
+    0 10px 0 rgba(0,0,0,.3),
+    0 0 35px rgba(34,197,94,.7);
+}
+
+.btn:active{
+  transform:translateY(4px) scale(.98);
+  box-shadow:0 3px 0 rgba(0,0,0,.3);
+}
+
+@keyframes glowPulse{
+  0%{
+    box-shadow:
+      0 8px 0 rgba(0,0,0,.3),
+      0 0 15px rgba(34,197,94,.3);
+  }
+  50%{
+    box-shadow:
+      0 8px 0 rgba(0,0,0,.3),
+      0 0 35px rgba(34,197,94,.8);
+  }
+  100%{
+    box-shadow:
+      0 8px 0 rgba(0,0,0,.3),
+      0 0 15px rgba(34,197,94,.3);
+  }
+}
+</style>
+</head>
+
+<body>
+
+<div class="box">
+
+  <div class="title-ar">🏎️ سباق اللانهاية</div>
+
+  <div class="section">
+    <p>
+      🚗 سباق اللانهاية هي لعبة سباق سريعة وممتعة، هدفك فيها هو تجنب السيارات 💥
+      وجمع العملات 🪙 وتحقيق أعلى رقم قياسي ممكن 🏆.
+    </p>
+
+    <p>
+      تحتوي اللعبة على مميزات مثل:
+      🚗 سيارات متنوعة،
+      🪙 نظام عملات ومتجر،
+      🧲 مغناطيس،
+      🛡️ درع،
+      🎁 صندوق هدايا.
+    </p>
+
+    <p>
+      🚀 اللعبة ما زالت تحت التطوير وسيتم إضافة مميزات جديدة قريبًا.
+    </p>
+  </div>
+
+  <div class="divider"></div>
+
+  <div class="title-en">🏎️ Infinity Race</div>
+
+  <div class="section en">
+    <p>
+      🚗 Infinity Race is a fast and exciting racing game where your goal is to avoid cars 💥,
+      collect coins 🪙, and achieve the highest score possible 🏆.
+    </p>
+
+    <p>
+      The game includes features such as:
+      🚗 multiple cars,
+      🪙 coin system,
+      🧲 magnet,
+      🛡️ shield,
+      🎁 reward box.
+    </p>
+
+    <p>
+      🚀 The game is still under development and more features will be added soon.
+    </p>
+  </div>
+
+  <a href="index.html" class="btn">⬅️ الرجوع للعبة</a>
+
+</div>
+
+</body>
+</html>

@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>سياسة الخصوصية | Infinity Race</title>
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0;font-family:Tahoma,Arial}
+
+body{
+  min-height:100vh;
+  background:radial-gradient(circle at top,#0f766e 0%,#0f172a 45%,#020617 100%);
+  color:white;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  padding:20px;
+}
+
+.box{
+  max-width:700px;
+  width:100%;
+  background:rgba(15,23,42,.9);
+  border-radius:30px;
+  padding:35px 25px;
+  border:1px solid rgba(255,255,255,.1);
+  box-shadow:0 0 60px rgba(20,184,166,.25),0 25px 80px rgba(0,0,0,.7);
+}
+
+/* العناوين */
+.title-ar{
+  text-align:center;
+  font-size:40px;
+  color:#38bdf8;
+  margin-bottom:10px;
+  text-shadow:0 0 20px rgba(56,189,248,.5);
+}
+
+.title-en{
+  text-align:center;
+  font-size:34px;
+  color:#22d3ee;
+  margin-bottom:10px;
+  text-shadow:0 0 20px rgba(34,211,238,.4);
+}
+
+/* الأقسام */
+.section{
+  background:linear-gradient(180deg,rgba(2,6,23,.7),rgba(15,23,42,.6));
+  border-radius:18px;
+  padding:18px;
+  margin-top:15px;
+  border:1px solid rgba(148,163,184,.2);
+}
+
+/* النص */
+p{
+  color:#e2e8f0;
+  line-height:1.9;
+  font-size:16px;
+}
+
+/* إنجليزي */
+.en{
+  direction:ltr;
+  text-align:left;
+}
+
+/* فاصل */
+.divider{
+  height:2px;
+  background:linear-gradient(to right,transparent,#22d3ee,transparent);
+  margin:30px 0;
+}
+
+/* زر */
+.btn{
+  display:block;
+  width:240px;
+  margin:30px auto 0;
+  padding:15px;
+  background:linear-gradient(180deg,#2563eb,#1e40af);
+  color:white;
+  text-decoration:none;
+  border-radius:16px;
+  font-weight:bold;
+  text-align:center;
+  box-shadow:
+    0 8px 0 rgba(0,0,0,.3),
+    0 0 25px rgba(37,99,235,.4);
+  transition:all .2s ease;
+  animation:glowPulse 2s infinite;
+}
+
+.btn:hover{
+  transform:scale(1.08);
+  box-shadow:
+    0 10px 0 rgba(0,0,0,.3),
+    0 0 35px rgba(37,99,235,.7);
+}
+
+.btn:active{
+  transform:translateY(4px) scale(.98);
+  box-shadow:0 3px 0 rgba(0,0,0,.3);
+}
+
+@keyframes glowPulse{
+  0%{
+    box-shadow:
+      0 8px 0 rgba(0,0,0,.3),
+      0 0 15px rgba(37,99,235,.3);
+  }
+  50%{
+    box-shadow:
+      0 8px 0 rgba(0,0,0,.3),
+      0 0 35px rgba(37,99,235,.8);
+  }
+  100%{
+    box-shadow:
+      0 8px 0 rgba(0,0,0,.3),
+      0 0 15px rgba(37,99,235,.3);
+  }
+}
+</style>
+</head>
+
+<body>
+
+<div class="box">
+
+  <!-- عربي -->
+  <div class="title-ar">🔒 سياسة الخصوصية</div>
+
+  <div class="section">
+    <p>
+      🔒 نحن نحترم خصوصيتك، ولا نقوم بجمع أي معلومات شخصية مثل الاسم أو البريد الإلكتروني.
+    </p>
+
+    <p>
+      🪙 قد يتم حفظ بعض بيانات اللعبة مثل العملات وأفضل نتيجة على جهازك فقط باستخدام التخزين المحلي.
+    </p>
+
+    <p>
+      📢 قد يتم عرض إعلانات مستقبلًا باستخدام خدمات مثل Google، وقد تستخدم هذه الخدمات ملفات تعريف الارتباط (Cookies).
+    </p>
+
+    <p>
+      🔄 باستخدامك لهذه اللعبة فإنك توافق على سياسة الخصوصية هذه.
+    </p>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- إنجليزي -->
+  <div class="title-en">🔒 Privacy Policy</div>
+
+  <div class="section en">
+    <p>
+      🔒 We respect your privacy and do not collect any personal information such as name or email.
+    </p>
+
+    <p>
+      🪙 Some game data like coins and high scores may be stored locally on your device.
+    </p>
+
+    <p>
+      📢 Ads may be shown in the future using services like Google, which may use cookies.
+    </p>
+
+    <p>
+      🔄 By using this game, you agree to this privacy policy.
+    </p>
+  </div>
+
+  <a href="index.html" class="btn">⬅️ الرجوع للعبة</a>
+
+</div>
+
+</body>
+</html>
