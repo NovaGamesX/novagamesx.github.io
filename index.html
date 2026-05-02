@@ -448,7 +448,8 @@ function drawEffects(){if(crashFlash>0){ctx.save();ctx.fillStyle='rgba(239,68,68
 function updatePlayer(){
   if(controlType==='swipe'){
     targetPlayerX=Math.max(42,Math.min(300,targetPlayerX));
-    player.x+=(targetPlayerX-player.x)*Math.min(1,0.85*deltaScale);
+    // لا نستخدم تنعيم قوي هنا حتى لا يحس اللاعب بتعليق في اللمس
+    player.x=targetPlayerX;
   }else{
     if(keys.left&&player.x>42)player.x-=player.speed*deltaScale;
     if(keys.right&&player.x+player.width<358)player.x+=player.speed*deltaScale;
@@ -585,6 +586,15 @@ canvas.addEventListener('pointerdown',e=>{
   pointerMoved=false;
   pointerStartX=e.clientX;
   pointerStartY=e.clientY;
+
+  // تحكم لمس فوري بدون تأخير
+  if(screen==='game'&&controlType==='swipe'){
+    const r=canvas.getBoundingClientRect();
+    const x=(e.clientX-r.left)*(GAME_W/r.width);
+    targetPlayerX=Math.max(42,Math.min(300,x-player.width/2));
+    player.x=targetPlayerX;
+  }
+
   try{canvas.setPointerCapture(e.pointerId)}catch(err){}
 },{passive:false});
 
@@ -595,12 +605,13 @@ canvas.addEventListener('pointermove',e=>{
   const dy=e.clientY-pointerStartY;
   if(Math.abs(dx)>12||Math.abs(dy)>12)pointerMoved=true;
 
-  // تحكم لمس سلس: اسحب يمين/يسار والسيارة تتبع إصبعك
+  // تحكم لمس فوري: السيارة تتبع مكان الإصبع أفقيًا بدون تعليق
+  // السحب العمودي لا يسرّع اللعبة ولا يؤثر على السرعة، فقط نستخدم X لتحريك السيارة
   if(screen==='game'&&controlType==='swipe'){
-    if(Math.abs(dy)>Math.abs(dx))return;
     const r=canvas.getBoundingClientRect();
     const x=(e.clientX-r.left)*(GAME_W/r.width);
     targetPlayerX=Math.max(42,Math.min(300,x-player.width/2));
+    player.x=targetPlayerX;
   }
 },{passive:false});
 
