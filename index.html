@@ -280,7 +280,8 @@ ctx.shadowBlur=18+startPulse*24;
 ctx.fillStyle='rgba(34,197,94,.18)';
 rr(70,300,260,62,16);ctx.fill();
 ctx.restore();
-bigButton(70,300,260,62,t('ابدأ اللعب','Start Game'),'▶','#22c55e','#15803d',true);bigButton(70,374,260,54,t('المتجر','Shop'),'🛒','#0ea5e9','#0369a1');bigButton(70,440,260,54,t('الإعدادات','Settings'),'⚙️','#64748b','#334155');bigButton(70,502,260,50,t('تعليمات','How to Play'),'؟','#7c3aed','#5b21b6');ctx.fillStyle='rgba(15,23,42,.82)';rr(60,575,280,28,14);ctx.fill();ctx.fillStyle='#cbd5e1';ctx.font='13px Arial';ctx.fillText(t('تجنب السيارات واجمع العملات','Avoid cars and collect coins'),200,594);
+let btnMove=Math.sin(Date.now()/420)*3;
+bigButton(70,300+btnMove,260,62,t('ابدأ اللعب','Start Game'),'▶','#22c55e','#15803d',true);bigButton(70,374,260,54,t('المتجر','Shop'),'🛒','#0ea5e9','#0369a1');bigButton(70,440,260,54,t('الإعدادات','Settings'),'⚙️','#64748b','#334155');bigButton(70,502,260,50,t('تعليمات','How to Play'),'؟','#7c3aed','#5b21b6');ctx.fillStyle='rgba(15,23,42,.82)';rr(60,575,280,28,14);ctx.fill();ctx.fillStyle='#cbd5e1';ctx.font='13px Arial';ctx.fillText(t('تجنب السيارات واجمع العملات','Avoid cars and collect coins'),200,594);
 // Ad slot (Home)
 drawAdSlot(80,605,240,24,t('📢 إعلان','📢 Ad'));ctx.textAlign='start'}
 function setMenu(){leftBtn.style.display='none';rightBtn.style.display='none';startBtn.style.display='none';rewardBtn.style.display='none';applyLang()}
@@ -411,22 +412,115 @@ function factoryReset(){localStorage.removeItem('coins');localStorage.removeItem
 function rewardLife(){if(screen==='game'&&gameRunning){adBox.textContent=t('المكافأة تظهر بعد الخسارة فقط','Reward appears after game over');return}if(rewardUsedThisRound){adBox.textContent=t('استخدمت المكافأة هذه الجولة','Reward already used');return}rewardUsedThisRound=true;lives=Math.max(lives,1)+1;ui();adBox.textContent=t('تمت إضافة قلب إضافي ❤️','Extra life added ❤️');beep('power')}
 function toggleMute(){unlockAudio();muted=!muted;muteTop.textContent=muted?'🔇':'🔊';if(!muted)beep('power')}
 startBtn.addEventListener('click',startGame);shopBtn.addEventListener('click',shop);homeBtn.addEventListener('click',showHome);rewardBtn.addEventListener('click',rewardLife);muteTop.addEventListener('click',toggleMute);pauseTop.addEventListener('click',()=>{if(screen==='game')togglePause();else if(screen==='end')startGame()});
-canvas.addEventListener('click',e=>{initAudio();const r=canvas.getBoundingClientRect(),x=(e.clientX-r.left)*(GAME_W/r.width),y=(e.clientY-r.top)*(GAME_H/r.height);
-if(screen==='pause'){
-  if(x>80&&x<320&&y>350&&y<400){togglePause();return}
-  if(x>80&&x<320&&y>410&&y<460){paused=false;gameRunning=false;cancelAnimationFrame(animationId);showHome();return}
-}if(screen==='home'){if(x>70&&x<330&&y>300&&y<362){startGame();return}if(x>70&&x<330&&y>374&&y<428){shop();return}if(x>70&&x<330&&y>440&&y<494){settingsPage();return}if(x>70&&x<330&&y>502&&y<552){instructionsPage();return}}if(screen==='shop'){if(x>110&&x<290&&y>568&&y<612){showHome();return}let col=x<200?0:1,row=Math.floor((y-145)/90),i=row*2+col;if(i>=0&&i<8)buyOrSelect(i);return}if(screen==='settings'){if(x>90&&x<310&&y>545&&y<593){showHome();return}let sy=y+settingsScroll;if(x>70&&x<330&&sy>180&&sy<230){controlType=controlType==='buttons'?'swipe':'buttons';localStorage.setItem('controlType',controlType);settingsPage();return}if(x>70&&x<330&&sy>258&&sy<308){vibration=!vibration;localStorage.setItem('vibration',vibration);settingsPage();return}if(x>70&&x<330&&sy>336&&sy<386){lang=lang==='ar'?'en':'ar';localStorage.setItem('gameLang',lang);settingsPage();return}if(x>70&&x<330&&sy>414&&sy<464){ratePage();return}if(x>70&&x<330&&sy>492&&sy<542){confirmResetPage();return}}if(screen==='gift'){if(x>120&&x<280&&y>285&&y<420){openBestReward();return}}if(screen==='confirmReset'){if(x>70&&x<330&&y>330&&y<380){factoryReset();return}if(x>90&&x<310&&y>405&&y<455){settingsPage();return}}if(screen==='rate'){if(x>100&&x<300&&y>340&&y<390){settingsPage();return}}if(screen==='instructions'){
-  if(x>45&&x<190&&y>520&&y<562){window.location.href='privacy.html';return}
-  if(x>210&&x<355&&y>520&&y<562){window.location.href='about.html';return}
-  if(x>90&&x<310&&y>575&&y<617){showHome();return}
-}if(screen==='end'){if(x>70&&x<330&&y>410&&y<462){startGame();return}if(x>70&&x<330&&y>470&&y<522){showHome();return}if(x>70&&x<330&&y>530&&y<582){shareGame();return}}});
+function handleCanvasTap(x,y){
+  if(screen==='pause'){
+    if(x>80&&x<320&&y>350&&y<400){togglePause();return}
+    if(x>80&&x<320&&y>410&&y<460){paused=false;gameRunning=false;cancelAnimationFrame(animationId);showHome();return}
+  }
+  if(screen==='home'){
+    if(x>70&&x<330&&y>300&&y<362){startGame();return}
+    if(x>70&&x<330&&y>374&&y<428){shop();return}
+    if(x>70&&x<330&&y>440&&y<494){settingsPage();return}
+    if(x>70&&x<330&&y>502&&y<552){instructionsPage();return}
+  }
+  if(screen==='shop'){
+    if(x>110&&x<290&&y>568&&y<612){showHome();return}
+    let col=x<200?0:1,row=Math.floor((y-145)/90),i=row*2+col;
+    if(i>=0&&i<8)buyOrSelect(i);
+    return;
+  }
+  if(screen==='settings'){
+    if(x>90&&x<310&&y>545&&y<593){showHome();return}
+    let sy=y+settingsScroll;
+    if(x>70&&x<330&&sy>180&&sy<230){controlType=controlType==='buttons'?'swipe':'buttons';localStorage.setItem('controlType',controlType);settingsPage();return}
+    if(x>70&&x<330&&sy>258&&sy<308){vibration=!vibration;localStorage.setItem('vibration',vibration);settingsPage();return}
+    if(x>70&&x<330&&sy>336&&sy<386){lang=lang==='ar'?'en':'ar';localStorage.setItem('gameLang',lang);settingsPage();return}
+    if(x>70&&x<330&&sy>414&&sy<464){ratePage();return}
+    if(x>70&&x<330&&sy>492&&sy<542){confirmResetPage();return}
+  }
+  if(screen==='gift'){
+    if(x>120&&x<280&&y>285&&y<420){openBestReward();return}
+  }
+  if(screen==='confirmReset'){
+    if(x>70&&x<330&&y>330&&y<380){factoryReset();return}
+    if(x>90&&x<310&&y>405&&y<455){settingsPage();return}
+  }
+  if(screen==='rate'){
+    if(x>100&&x<300&&y>340&&y<390){settingsPage();return}
+  }
+  if(screen==='instructions'){
+    if(x>45&&x<190&&y>520&&y<562){window.location.href='privacy.html';return}
+    if(x>210&&x<355&&y>520&&y<562){window.location.href='about.html';return}
+    if(x>90&&x<310&&y>575&&y<617){showHome();return}
+  }
+  if(screen==='end'){
+    if(x>70&&x<330&&y>410&&y<462){startGame();return}
+    if(x>70&&x<330&&y>470&&y<522){showHome();return}
+    if(x>70&&x<330&&y>530&&y<582){shareGame();return}
+  }
+}
+canvas.addEventListener('click',e=>{
+  unlockAudio();
+  const r=canvas.getBoundingClientRect();
+  const x=(e.clientX-r.left)*(GAME_W/r.width);
+  const y=(e.clientY-r.top)*(GAME_H/r.height);
+  handleCanvasTap(x,y);
+});
+
 document.addEventListener('keydown',e=>{if(e.key==='ArrowLeft'||e.key==='a')keys.left=true;if(e.key==='ArrowRight'||e.key==='d')keys.right=true;if(e.key==='Enter')startGame();if(e.key===' '){e.preventDefault();togglePause()}if(screen==='shop'&&['1','2','3','4','5','6','7','8'].includes(e.key))buyOrSelect(Number(e.key)-1)});
 document.addEventListener('keyup',e=>{if(e.key==='ArrowLeft'||e.key==='a')keys.left=false;if(e.key==='ArrowRight'||e.key==='d')keys.right=false});
-function bindBtn(b,side){b.addEventListener('touchstart',e=>{e.preventDefault();unlockAudio();keys[side]=true},{passive:false});b.addEventListener('touchmove',e=>{e.preventDefault()},{passive:false});b.addEventListener('touchend',e=>{e.preventDefault();keys[side]=false},{passive:false});b.addEventListener('touchcancel',()=>keys[side]=false);b.addEventListener('mousedown',()=>keys[side]=true);b.addEventListener('mouseup',()=>keys[side]=false);b.addEventListener('mouseleave',()=>keys[side]=false)}bindBtn(leftBtn,'left');bindBtn(rightBtn,'right');
+function bindBtn(b,side){
+  b.addEventListener('pointerdown',e=>{e.preventDefault();unlockAudio();keys[side]=true;b.setPointerCapture&&b.setPointerCapture(e.pointerId)});
+  b.addEventListener('pointerup',e=>{e.preventDefault();keys[side]=false});
+  b.addEventListener('pointercancel',()=>keys[side]=false);
+  b.addEventListener('pointerleave',()=>keys[side]=false);
+  b.addEventListener('mousedown',()=>keys[side]=true);
+  b.addEventListener('mouseup',()=>keys[side]=false);
+  b.addEventListener('mouseleave',()=>keys[side]=false);
+}
+bindBtn(leftBtn,'left');bindBtn(rightBtn,'right');
 let touchStartX=0,touchStartY=0;
-canvas.addEventListener('touchstart',e=>{unlockAudio();touchStartX=e.touches[0].clientX;touchStartY=e.touches[0].clientY},{passive:true});
-canvas.addEventListener('touchmove',e=>{e.preventDefault();},{passive:false});
-canvas.addEventListener('touchend',e=>{let dx=e.changedTouches[0].clientX-touchStartX,dy=e.changedTouches[0].clientY-touchStartY;if(screen==='settings'){if(Math.abs(dy)>25){settingsScroll=Math.max(0,Math.min(95,settingsScroll-dy));settingsPage()}return}if(screen==='gift'){openBestReward();return}if(controlType!=='swipe'||screen!=='game')return;if(Math.abs(dx)>35&&Math.abs(dx)>Math.abs(dy)){player.x=dx>0?Math.min(player.x+92,300):Math.max(player.x-92,42)}},{passive:false});
+canvas.addEventListener('touchstart',e=>{
+  unlockAudio();
+  touchStartX=e.touches[0].clientX;
+  touchStartY=e.touches[0].clientY;
+},{passive:true});
+
+canvas.addEventListener('touchmove',e=>{
+  // داخل اللعب فقط: امنع السحب العمودي من التأثير أو تحريك الصفحة
+  if(screen==='game')e.preventDefault();
+},{passive:false});
+
+canvas.addEventListener('touchend',e=>{
+  const r=canvas.getBoundingClientRect();
+  const endX=e.changedTouches[0].clientX;
+  const endY=e.changedTouches[0].clientY;
+  const dx=endX-touchStartX;
+  const dy=endY-touchStartY;
+
+  // لو كانت لمسة عادية، تعامل معها كضغط زر
+  if(Math.abs(dx)<18&&Math.abs(dy)<18){
+    const x=(endX-r.left)*(GAME_W/r.width);
+    const y=(endY-r.top)*(GAME_H/r.height);
+    handleCanvasTap(x,y);
+    return;
+  }
+
+  // إعدادات: السحب فقط للتمرير داخل الإعدادات
+  if(screen==='settings'){
+    if(Math.abs(dy)>25){settingsScroll=Math.max(0,Math.min(95,settingsScroll-dy));settingsPage()}
+    return;
+  }
+
+  if(screen==='gift'){openBestReward();return}
+
+  // داخل اللعب: تجاهل السحب العمودي، واسمح فقط بالسحب يمين/يسار إذا اخترت السحب
+  if(controlType!=='swipe'||screen!=='game')return;
+  if(Math.abs(dx)>35&&Math.abs(dx)>Math.abs(dy)){
+    player.x=dx>0?Math.min(player.x+92,300):Math.max(player.x-92,42);
+  }
+},{passive:true});
+
 canvas.addEventListener('wheel',e=>{if(screen!=='settings')return;e.preventDefault();settingsScroll=Math.max(0,Math.min(95,settingsScroll+e.deltaY));settingsPage()},{passive:false});
 setupHiDPICanvas();ui();showHome();
 </script>
