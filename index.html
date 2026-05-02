@@ -460,6 +460,7 @@ function handleCanvasTap(x,y){
   }
 }
 canvas.addEventListener('click',e=>{
+  if(Date.now()-lastTouchEndTime<450)return;
   unlockAudio();
   const r=canvas.getBoundingClientRect();
   const x=(e.clientX-r.left)*(GAME_W/r.width);
@@ -480,39 +481,55 @@ function bindBtn(b,side){
 }
 bindBtn(leftBtn,'left');bindBtn(rightBtn,'right');
 let touchStartX=0,touchStartY=0;
+let touchMoved=false;
+let lastTapTime=0;
+let lastTouchEndTime=0;
+
 canvas.addEventListener('touchstart',e=>{
   unlockAudio();
   touchStartX=e.touches[0].clientX;
   touchStartY=e.touches[0].clientY;
+  touchMoved=false;
 },{passive:true});
 
 canvas.addEventListener('touchmove',e=>{
-  // داخل اللعب فقط: امنع السحب العمودي من التأثير أو تحريك الصفحة
+  const dx=e.touches[0].clientX-touchStartX;
+  const dy=e.touches[0].clientY-touchStartY;
+  if(Math.abs(dx)>15||Math.abs(dy)>15)touchMoved=true;
+  // داخل اللعب فقط نمنع السحب العمودي من تحريك الصفحة أو التأثير على اللعبة
   if(screen==='game')e.preventDefault();
 },{passive:false});
 
 canvas.addEventListener('touchend',e=>{
+  lastTouchEndTime=Date.now();
   const r=canvas.getBoundingClientRect();
   const endX=e.changedTouches[0].clientX;
   const endY=e.changedTouches[0].clientY;
   const dx=endX-touchStartX;
   const dy=endY-touchStartY;
 
-  // لو كانت لمسة عادية، تعامل معها كضغط زر
-  if(Math.abs(dx)<18&&Math.abs(dy)<18){
+  // إذا كانت لمسة عادية فقط، نفذ ضغطة واحدة ومنع الضغطات الوهمية
+  if(!touchMoved&&Math.abs(dx)<18&&Math.abs(dy)<18){
+    const now=Date.now();
+    if(now-lastTapTime<350)return;
+    lastTapTime=now;
     const x=(endX-r.left)*(GAME_W/r.width);
     const y=(endY-r.top)*(GAME_H/r.height);
     handleCanvasTap(x,y);
     return;
   }
 
-  // إعدادات: السحب فقط للتمرير داخل الإعدادات
+  // الإعدادات: السحب فقط للتمرير داخل القائمة، بدون ضغط أزرار
   if(screen==='settings'){
-    if(Math.abs(dy)>25){settingsScroll=Math.max(0,Math.min(95,settingsScroll-dy));settingsPage()}
+    if(Math.abs(dy)>25){
+      settingsScroll=Math.max(0,Math.min(95,settingsScroll-dy));
+      settingsPage();
+    }
     return;
   }
 
-  if(screen==='gift'){openBestReward();return}
+  // صندوق الهدية: افتح فقط إذا كانت لمسة عادية، وليس سحب
+  if(screen==='gift')return;
 
   // داخل اللعب: تجاهل السحب العمودي، واسمح فقط بالسحب يمين/يسار إذا اخترت السحب
   if(controlType!=='swipe'||screen!=='game')return;
