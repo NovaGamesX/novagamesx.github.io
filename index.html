@@ -974,7 +974,7 @@ function playGiftExplosion(rewardIcon,message){
     ctx.fillStyle='white';ctx.font='bold 19px Arial';ctx.fillText('🎁 '+message,200,410);
     ctx.fillStyle='#cbd5e1';ctx.font='14px Arial';ctx.fillText(t('سيتم الرجوع لشاشة النهاية','Returning to game over'),200,448);
     ctx.textAlign='start';
-    if(elapsed<2100)requestAnimationFrame(drawExplosion);else drawEndScreen();
+    if(elapsed<2100)requestAnimationFrame(drawExplosion);else{drawEndScreen();startHomeAnimation();}
   }
   drawExplosion();
 }
