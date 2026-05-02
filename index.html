@@ -77,7 +77,40 @@ function redrawScreen(){
   else if(screen==='end')drawEndScreen();
   startHomeAnimation();
 }
-window.addEventListener('resize',()=>{setAppHeight();if(!gameRunning||paused)redrawScreen();else setupHiDPICanvas();});
+window.addEventListener('resize',()=>{
+  setAppHeight();
+  setupHiDPICanvas();
+  if(gameRunning&&!paused){
+    // بعد الخروج من ملء الشاشة لا نترك الكانفس أسود؛ نعيد تشغيل الرسم مباشرة
+    cancelAnimationFrame(animationId);
+    lastFrameTime=0;
+    gameLoop();
+  }else{
+    redrawScreen();
+  }
+});
+
+// إصلاح مشكلة الشاشة السوداء عند الخروج من وضع ملء الشاشة
+function handleViewportRestore(){
+  setAppHeight();
+  setupHiDPICanvas();
+
+  if(gameRunning){
+    cancelAnimationFrame(animationId);
+    lastFrameTime=0;
+
+    if(paused || screen==='pause'){
+      paused=true;
+      drawPauseScreen();
+    }else{
+      gameLoop();
+    }
+  }else{
+    redrawScreen();
+  }
+}
+document.addEventListener('fullscreenchange',()=>setTimeout(handleViewportRestore,120));
+document.addEventListener('webkitfullscreenchange',()=>setTimeout(handleViewportRestore,120));
 // منع سحب الصفحة في الجوال أثناء اللعب فقط بدون تعطيل الأزرار
 window.addEventListener('touchmove',e=>{if(screen==='game')e.preventDefault()},{passive:false});
 const coinsText=document.getElementById('coinsText');
@@ -567,31 +600,37 @@ function updatePlayer(){
 function hit(a,b,p=8){return a.x+p<b.x+b.width-p&&a.x+a.width-p>b.x+p&&a.y+p<b.y+b.height-p&&a.y+a.height-p>b.y+p}
 function hitC(c){return player.x<c.x+c.r&&player.x+player.width>c.x-c.r&&player.y<c.y+c.r&&player.y+player.height>c.y-c.r}
 function lose(){if(invincibleTimer>0)return;if(vibration&&navigator.vibrate)navigator.vibrate(120);shakeTimer=8;crashFlash=10;if(shield>0){shield--;invincibleTimer=95;beep('power');return}lives--;invincibleTimer=95;beep('crash');if(lives<=0)endGame()}
+function drawPauseScreen(){
+  screen='pause';
+  pauseTop.textContent='▶';
+  ctx.clearRect(0,0,GAME_W,GAME_H);
+  bg();
+  ctx.fillStyle='rgba(0,0,0,.62)';
+  ctx.fillRect(0,0,GAME_W,GAME_H);
+  panel(55,220,290,245,22);
+  ctx.textAlign='center';
+  ctx.font='900 32px Arial';
+  ctx.fillStyle='white';
+  ctx.fillText(t('إيقاف مؤقت','Paused'),200,285);
+  ctx.font='16px Arial';
+  ctx.fillStyle='#cbd5e1';
+  ctx.fillText(t('اضغط متابعة للرجوع','Tap continue to return'),200,322);
+  bigButton(80,350,240,50,t('متابعة','Continue'),'▶','#22c55e','#15803d');
+  bigButton(80,410,240,50,t('الصفحة الرئيسية','Home'),'🏠','#2563eb','#1e40af');
+  drawAdSlot(80,470,240,28,t('📢 إعلان','📢 Ad'));
+  ctx.textAlign='start';
+}
+
 function togglePause(){
   if(screen!=='game' && screen!=='pause')return;
   paused=!paused;
   if(paused){
-    screen='pause';
-    pauseTop.textContent='▶';
     cancelAnimationFrame(animationId);
-    ctx.fillStyle='rgba(0,0,0,.62)';
-    ctx.fillRect(0,0,GAME_W,GAME_H);
-    panel(55,220,290,245,22);
-    ctx.textAlign='center';
-    ctx.font='900 32px Arial';
-    ctx.fillStyle='white';
-    ctx.fillText(t('إيقاف مؤقت','Paused'),200,285);
-    ctx.font='16px Arial';
-    ctx.fillStyle='#cbd5e1';
-    ctx.fillText(t('اضغط متابعة للرجوع','Tap continue to return'),200,322);
-    bigButton(80,350,240,50,t('متابعة','Continue'),'▶','#22c55e','#15803d');
-    bigButton(80,410,240,50,t('الصفحة الرئيسية','Home'),'🏠','#2563eb','#1e40af');
-// Ad slot (Pause)
-drawAdSlot(80,470,240,28,t('📢 إعلان','📢 Ad'));
-    ctx.textAlign='start';
+    drawPauseScreen();
   }else{
     screen='game';
     pauseTop.textContent='⏸';
+    lastFrameTime=0;
     gameLoop();
   }
 }
