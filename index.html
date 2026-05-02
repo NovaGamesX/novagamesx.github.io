@@ -243,7 +243,20 @@ function beep(type){
   }catch(e){}
 }
 function rr(x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.lineTo(x+w-r,y);ctx.quadraticCurveTo(x+w,y,x+w,y+r);ctx.lineTo(x+w,y+h-r);ctx.quadraticCurveTo(x+w,y+h,x+w-r,y+h);ctx.lineTo(x+r,y+h);ctx.quadraticCurveTo(x,y+h,x,y+h-r);ctx.lineTo(x,y+r);ctx.quadraticCurveTo(x,y,x+r,y);ctx.closePath()}
-function panel(x,y,w,h,r=24){ctx.fillStyle='rgba(3,7,18,.88)';rr(x,y,w,h,r);ctx.fill();ctx.strokeStyle='rgba(148,163,184,.35)';ctx.lineWidth=2;rr(x,y,w,h,r);ctx.stroke()}
+function panel(x,y,w,h,r=24){
+  ctx.save();
+  let pg=ctx.createLinearGradient(0,y,0,y+h);
+  pg.addColorStop(0,'rgba(15,23,42,.94)');
+  pg.addColorStop(.55,'rgba(2,6,23,.91)');
+  pg.addColorStop(1,'rgba(15,23,42,.94)');
+  ctx.shadowColor='rgba(59,130,246,.28)';
+  ctx.shadowBlur=18;
+  ctx.fillStyle=pg;rr(x,y,w,h,r);ctx.fill();
+  ctx.shadowBlur=0;
+  ctx.strokeStyle='rgba(148,163,184,.42)';ctx.lineWidth=2;rr(x,y,w,h,r);ctx.stroke();
+  ctx.fillStyle='rgba(255,255,255,.06)';rr(x+8,y+8,w-16,18,12);ctx.fill();
+  ctx.restore();
+}
 function city(){let th=themes[(level-1)%themes.length];ctx.fillStyle=th.sky;ctx.fillRect(0,0,GAME_W,GAME_H);cityOffset=(cityOffset+obstacleSpeed*.22*deltaScale)%90;let count=lowPowerMode?7:11;for(let i=0;i<count;i++){let x=(i*60-cityOffset)%500-70,h=lowPowerMode?70+(i*31%90):75+(i*43%130);ctx.fillStyle=i%2?'rgba(15,23,42,.9)':'rgba(30,41,59,.9)';ctx.fillRect(x,0,44,h);if(!lowPowerMode){ctx.fillStyle='rgba(251,191,36,.55)';for(let y=14;y<h-10;y+=21){ctx.fillRect(x+9,y,6,8);ctx.fillRect(x+27,y,6,8)}}}}
 function drawSideDecor(){
   decorOffset=(decorOffset+obstacleSpeed*.58*deltaScale)%210;
@@ -288,94 +301,99 @@ function drawTree(x,y,s=1){
   ctx.fillStyle='rgba(255,255,255,.08)';ctx.beginPath();ctx.arc(-6,-7,6,0,Math.PI*2);ctx.fill();
   ctx.restore();
 }
-function bg(){let th=themes[(level-1)%themes.length];city();let g=ctx.createLinearGradient(0,70,0,GAME_H);g.addColorStop(0,th.road1);g.addColorStop(1,th.road2);ctx.fillStyle=g;ctx.fillRect(90,0,220,GAME_H);ctx.fillStyle=th.side;ctx.fillRect(0,0,34,GAME_H);ctx.fillRect(366,0,34,GAME_H);drawSideDecor();ctx.fillStyle='rgba(255,255,255,.55)';ctx.fillRect(56,0,5,GAME_H);ctx.fillRect(339,0,5,GAME_H);ctx.fillStyle='rgba(250,204,21,.95)';ctx.fillRect(70,0,4,GAME_H);ctx.fillRect(326,0,4,GAME_H);roadLineOffset+=obstacleSpeed*deltaScale;if(roadLineOffset>90)roadLineOffset=0;ctx.fillStyle='rgba(255,255,255,.95)';for(let y=-80+roadLineOffset;y<GAME_H;y+=105){rr(153,y,8,58,4);ctx.fill();rr(239,y,8,58,4);ctx.fill()}ctx.fillStyle='rgba(255,255,255,.28)';ctx.font='bold 17px Arial';ctx.textAlign='center';ctx.fillText(tr(th.name),200,40);ctx.textAlign='start'}
+function bg(){
+  let th=themes[(level-1)%themes.length];
+  city();
+
+  // طريق بتدرج وعمق أفضل
+  let g=ctx.createLinearGradient(90,0,310,GAME_H);
+  g.addColorStop(0,'#3b4454');
+  g.addColorStop(.45,th.road1);
+  g.addColorStop(1,th.road2);
+  ctx.fillStyle=g;ctx.fillRect(90,0,220,GAME_H);
+
+  // جوانب الطريق
+  ctx.fillStyle=th.side;ctx.fillRect(0,0,34,GAME_H);ctx.fillRect(366,0,34,GAME_H);
+  drawSideDecor();
+
+  // ظل داخلي على الطريق يعطي عمق
+  let roadShade=ctx.createLinearGradient(90,0,310,0);
+  roadShade.addColorStop(0,'rgba(0,0,0,.34)');
+  roadShade.addColorStop(.5,'rgba(255,255,255,.05)');
+  roadShade.addColorStop(1,'rgba(0,0,0,.34)');
+  ctx.fillStyle=roadShade;ctx.fillRect(90,0,220,GAME_H);
+
+  // حدود الطريق مضيئة
+  ctx.fillStyle='rgba(255,255,255,.62)';ctx.fillRect(56,0,5,GAME_H);ctx.fillRect(339,0,5,GAME_H);
+  ctx.fillStyle='rgba(250,204,21,.98)';ctx.fillRect(70,0,4,GAME_H);ctx.fillRect(326,0,4,GAME_H);
+  ctx.fillStyle='rgba(255,255,255,.14)';ctx.fillRect(94,0,3,GAME_H);ctx.fillRect(303,0,3,GAME_H);
+
+  roadLineOffset+=obstacleSpeed*deltaScale;if(roadLineOffset>90)roadLineOffset=0;
+  ctx.fillStyle='rgba(255,255,255,.96)';
+  for(let y=-80+roadLineOffset;y<GAME_H;y+=105){
+    rr(153,y,8,58,4);ctx.fill();rr(239,y,8,58,4);ctx.fill();
+    ctx.fillStyle='rgba(255,255,255,.25)';rr(154,y+7,6,18,3);ctx.fill();rr(240,y+7,6,18,3);ctx.fill();ctx.fillStyle='rgba(255,255,255,.96)';
+  }
+
+  ctx.fillStyle='rgba(255,255,255,.30)';ctx.font='bold 17px Arial';ctx.textAlign='center';ctx.fillText(tr(th.name),200,40);ctx.textAlign='start'
+}
 function car(x,y,w,h,body,glass='#111827',stripe=true,type='sport'){
   ctx.save();
   ctx.translate(x+w/2,y+h/2);
 
-  // ظل أرضي يعطي إحساس 3D
-  ctx.save();
-  ctx.globalAlpha=.42;
-  ctx.fillStyle='rgba(0,0,0,.75)';
-  ctx.beginPath();
-  ctx.ellipse(0,h/2-6,w*.46,10,0,0,Math.PI*2);
-  ctx.fill();
-  ctx.restore();
+  // ظل أرضي ناعم
+  ctx.save();ctx.globalAlpha=.46;ctx.fillStyle='rgba(0,0,0,.75)';ctx.beginPath();ctx.ellipse(0,h/2-5,w*.48,11,0,0,Math.PI*2);ctx.fill();ctx.restore();
 
-  let radius=18, topW=w-22, cabinY=-h/2+12, cabinH=24, nose=8;
-  if(type==='gt'){radius=20;topW=w-24;cabinY=-h/2+13;cabinH=23;nose=10}
-  if(type==='race'){radius=23;topW=w-30;cabinY=-h/2+10;cabinH=22;nose=13}
-  if(type==='sport'){radius=21;topW=w-26;cabinY=-h/2+11;cabinH=23;nose=12}
-  if(type==='luxury'){radius=16;topW=w-18;cabinY=-h/2+12;cabinH=27;nose=8}
-  if(type==='suv'){radius=12;topW=w-14;cabinY=-h/2+10;cabinH=30;nose=5}
-  if(type==='neon'||type==='cyber'||type==='hyper'){radius=20;topW=w-22;cabinY=-h/2+10;cabinH=24;nose=14}
-  if(type==='truck'){radius=9;topW=w-12;cabinY=-h/2+8;cabinH=30;nose=3}
-  if(type==='van'){radius=11;topW=w-14;cabinY=-h/2+10;cabinH=28;nose=4}
-  if(type==='tank'){radius=8;topW=w-18;cabinY=-h/2+16;cabinH=20;nose=2}
-  if(type==='bus'){radius=8;topW=w-10;cabinY=-h/2+10;cabinH=34;nose=2}
-  if(type==='pickup'){radius=12;topW=w-16;cabinY=-h/2+10;cabinH=26;nose=5}
+  let radius=18, topW=w-22, cabinY=-h/2+12, cabinH=24;
+  if(type==='gt'){radius=20;topW=w-24;cabinY=-h/2+13;cabinH=23}
+  if(type==='race'){radius=23;topW=w-30;cabinY=-h/2+10;cabinH=22}
+  if(type==='sport'){radius=21;topW=w-26;cabinY=-h/2+11;cabinH=23}
+  if(type==='luxury'){radius=16;topW=w-18;cabinY=-h/2+12;cabinH=27}
+  if(type==='suv'){radius=12;topW=w-14;cabinY=-h/2+10;cabinH=30}
+  if(type==='neon'||type==='cyber'||type==='hyper'){radius=20;topW=w-22;cabinY=-h/2+10;cabinH=24}
+  if(type==='truck'){radius=9;topW=w-12;cabinY=-h/2+8;cabinH=30}
+  if(type==='van'){radius=11;topW=w-14;cabinY=-h/2+10;cabinH=28}
+  if(type==='tank'){radius=8;topW=w-18;cabinY=-h/2+16;cabinH=20}
+  if(type==='bus'){radius=8;topW=w-10;cabinY=-h/2+10;cabinH=34}
+  if(type==='pickup'){radius=12;topW=w-16;cabinY=-h/2+10;cabinH=26}
 
-  // جسم السيارة الفخم بتدرج 3D واقعي
+  // جسم السيارة الفخم
   let bodyGrad=ctx.createLinearGradient(-w/2,-h/2,w/2,h/2);
-  bodyGrad.addColorStop(0,'rgba(255,255,255,.38)');
-  bodyGrad.addColorStop(.22,body);
-  bodyGrad.addColorStop(.66,body);
-  bodyGrad.addColorStop(1,'rgba(2,6,23,.96)');
-  ctx.shadowColor='rgba(0,0,0,.58)';
-  ctx.shadowBlur=lowPowerMode?0:16;
-  ctx.shadowOffsetY=lowPowerMode?0:7;
-  ctx.fillStyle=bodyGrad;
-  rr(-w/2,-h/2+2,w,h-4,radius);ctx.fill();
-  ctx.shadowBlur=0;ctx.shadowOffsetY=0;
+  bodyGrad.addColorStop(0,'rgba(255,255,255,.42)');bodyGrad.addColorStop(.22,body);bodyGrad.addColorStop(.66,body);bodyGrad.addColorStop(1,'rgba(2,6,23,.96)');
+  ctx.shadowColor='rgba(0,0,0,.58)';ctx.shadowBlur=lowPowerMode?0:16;ctx.shadowOffsetY=lowPowerMode?0:7;
+  ctx.fillStyle=bodyGrad;rr(-w/2,-h/2+2,w,h-4,radius);ctx.fill();ctx.shadowBlur=0;ctx.shadowOffsetY=0;
 
-  // عمق سفلي يعطي شكل سيارة حقيقية
-  ctx.fillStyle='rgba(0,0,0,.24)';
-  rr(-w/2+7,h/2-25,w-14,18,9);ctx.fill();
+  // عمق ولمعات
+  ctx.fillStyle='rgba(0,0,0,.24)';rr(-w/2+7,h/2-25,w-14,18,9);ctx.fill();
+  ctx.fillStyle='rgba(255,255,255,.17)';rr(-w/2+7,-h/2+7,w-14,11,7);ctx.fill();
 
-  // لمعة علوية ناعمة
-  ctx.fillStyle='rgba(255,255,255,.16)';
-  rr(-w/2+7,-h/2+7,w-14,11,7);ctx.fill();
-
-  // زجاج بتدرج داكن فخم
+  // زجاج
   let glassGrad=ctx.createLinearGradient(0,cabinY,0,cabinY+cabinH);
-  glassGrad.addColorStop(0,'rgba(255,255,255,.55)');
-  glassGrad.addColorStop(.25,glass);
-  glassGrad.addColorStop(1,'rgba(2,6,23,.88)');
-  ctx.fillStyle=glassGrad;
-  rr(-topW/2,cabinY,topW,cabinH,8);ctx.fill();
-  ctx.fillStyle='rgba(255,255,255,.14)';
-  rr(-topW/2+5,cabinY+4,topW-10,5,3);ctx.fill();
+  glassGrad.addColorStop(0,'rgba(255,255,255,.56)');glassGrad.addColorStop(.25,glass);glassGrad.addColorStop(1,'rgba(2,6,23,.88)');
+  ctx.fillStyle=glassGrad;rr(-topW/2,cabinY,topW,cabinH,8);ctx.fill();
+  ctx.fillStyle='rgba(255,255,255,.15)';rr(-topW/2+5,cabinY+4,topW-10,5,3);ctx.fill();
 
-  // جناح خلفي للسيارات الرياضية والفخمة
+  // جناح خلفي للسيارات الرياضية
   if(['sport','race','gt','neon','cyber','hyper'].includes(type)){
-    ctx.fillStyle='rgba(2,6,23,.84)';
-    rr(-w/2+10,h/2-10,w-20,6,3);ctx.fill();
-    ctx.fillStyle='rgba(255,255,255,.20)';
-    ctx.fillRect(-w/2+16,h/2-12,w-32,2);
+    ctx.fillStyle='rgba(2,6,23,.84)';rr(-w/2+10,h/2-10,w-20,6,3);ctx.fill();
+    ctx.fillStyle='rgba(255,255,255,.20)';ctx.fillRect(-w/2+16,h/2-12,w-32,2);
   }
 
-  // خطوط رياضية فقط للسيارات السريعة
+  // خطوط رياضية
   if(type==='sport'||type==='race'||type==='gt'){
-    ctx.fillStyle='rgba(255,255,255,.62)';
-    ctx.fillRect(-5,-h/2+8,3,h-17);
-    ctx.fillRect(3,-h/2+8,3,h-17);
+    ctx.fillStyle='rgba(255,255,255,.62)';ctx.fillRect(-5,-h/2+8,3,h-17);ctx.fillRect(3,-h/2+8,3,h-17);
   }
 
-  // كفرات واضحة لكل السيارات
-  function drawWheel(wx,wy){
-    ctx.fillStyle='rgba(2,6,23,.98)';
-    rr(wx,wy,10,25,4);ctx.fill();
-    ctx.fillStyle='rgba(148,163,184,.65)';
-    rr(wx+2,wy+5,4,14,2);ctx.fill();
-    ctx.fillStyle='rgba(255,255,255,.18)';
-    ctx.fillRect(wx+6,wy+4,2,16);
-  }
-  drawWheel(-w/2-6,-h/2+16);
-  drawWheel(w/2-4,-h/2+16);
-  drawWheel(-w/2-6,h/2-41);
-  drawWheel(w/2-4,h/2-41);
+  // تفاصيل الأنواع الكبيرة بدون لمبات
+  if(type==='truck'){ctx.fillStyle='rgba(0,0,0,.28)';rr(-w/2+8,-h/2+42,w-16,h/2-2,8);ctx.fill();}
+  if(type==='van'){ctx.fillStyle='rgba(255,255,255,.22)';rr(-w/2+10,-h/2+43,w-20,20,7);ctx.fill();}
+  if(type==='tank'){ctx.fillStyle='rgba(15,23,42,.72)';rr(-w/2+8,-h/2+35,w-16,36,8);ctx.fill();ctx.fillStyle='rgba(0,0,0,.55)';ctx.fillRect(-5,-h/2+18,10,50);}
+  if(type==='bus'){ctx.fillStyle='rgba(255,255,255,.22)';for(let yy=-h/2+46;yy<h/2-20;yy+=18){rr(-w/2+10,yy,w-20,10,4);ctx.fill();}}
+  if(type==='pickup'){ctx.fillStyle='rgba(0,0,0,.32)';rr(-w/2+9,-h/2+45,w-18,30,7);ctx.fill();}
 
-  // تفاصيل فخامة بدون لمبات أمامية
+  // كفرات واضحة
+  function wheel(wx,wy){ctx.fillStyle='rgba(2,6,23,.98)';rr(wx,wy,10,25,4);ctx.fill();ctx.fillStyle='rgba(148,163,184,.68)';rr(wx+2,wy+5,4,14,2);ctx.fill();ctx.fillStyle='rgba(255,255,255,.20)';ctx.fillRect(wx+6,wy+4,2,16)}
+  wheel(-w/2-6,-h/2+16);wheel(w/2-4,-h/2+16);wheel(-w/2-6,h/2-41);wheel(w/2-4,h/2-41);
 
   ctx.restore();
 }
@@ -430,8 +448,23 @@ function bigButton(x,y,w,h,text,icon,c1,c2,mode='normal'){
   ctx.restore();
 }
 function tapEffect(x,y){ctx.save();ctx.fillStyle='rgba(255,255,255,.18)';ctx.beginPath();ctx.arc(x,y,26,0,Math.PI*2);ctx.fill();ctx.strokeStyle='rgba(255,255,255,.35)';ctx.lineWidth=2;ctx.stroke();ctx.restore()}
-function drawAdSlot(x,y,w,h,label){ctx.save();ctx.fillStyle='rgba(15,23,42,.72)';rr(x,y,w,h,10);ctx.fill();ctx.setLineDash([6,5]);ctx.strokeStyle='rgba(250,204,21,.55)';ctx.lineWidth=1.5;rr(x,y,w,h,10);ctx.stroke();ctx.setLineDash([]);ctx.fillStyle='rgba(250,204,21,.88)';ctx.font='bold 12px Arial';ctx.textAlign='center';ctx.fillText(label||t('📢 مساحة إعلان','📢 Ad Space'),x+w/2,y+h/2+4);ctx.restore()}
-function logo(){ctx.textAlign='center';ctx.font='900 40px Tahoma';ctx.lineWidth=7;ctx.strokeStyle='#020617';ctx.strokeText(t('سباق','Infinity'),200,130);ctx.fillStyle='white';ctx.fillText(t('سباق','Infinity'),200,130);ctx.font='900 47px Tahoma';ctx.strokeText(t('اللانهاية','Race'),200,175);let g=ctx.createLinearGradient(120,170,280,215);g.addColorStop(0,'#fde047');g.addColorStop(1,'#f97316');ctx.fillStyle=g;ctx.fillText(t('اللانهاية','Race'),200,175);ctx.font='34px Arial';ctx.fillText('🏎️',285,195)}
+function drawAdSlot(x,y,w,h,label){
+  ctx.save();
+  let ag=ctx.createLinearGradient(0,y,0,y+h);ag.addColorStop(0,'rgba(30,41,59,.82)');ag.addColorStop(1,'rgba(2,6,23,.82)');
+  ctx.fillStyle=ag;rr(x,y,w,h,10);ctx.fill();
+  ctx.setLineDash([6,5]);ctx.strokeStyle='rgba(250,204,21,.60)';ctx.lineWidth=1.5;rr(x,y,w,h,10);ctx.stroke();ctx.setLineDash([]);
+  ctx.fillStyle='rgba(250,204,21,.92)';ctx.font='bold 12px Arial';ctx.textAlign='center';ctx.fillText(label||t('📢 مساحة إعلان','📢 Ad Space'),x+w/2,y+h/2+4);ctx.restore()
+}
+function logo(){
+  ctx.save();ctx.textAlign='center';
+  ctx.shadowColor='rgba(250,204,21,.45)';ctx.shadowBlur=18;
+  ctx.font='900 40px Tahoma';ctx.lineWidth=8;ctx.strokeStyle='#020617';ctx.strokeText(t('سباق','Infinity'),200,130);
+  let top=ctx.createLinearGradient(120,95,280,140);top.addColorStop(0,'#ffffff');top.addColorStop(1,'#bfdbfe');ctx.fillStyle=top;ctx.fillText(t('سباق','Infinity'),200,130);
+  ctx.font='900 47px Tahoma';ctx.strokeText(t('اللانهاية','Race'),200,175);
+  let g=ctx.createLinearGradient(95,160,305,205);g.addColorStop(0,'#fde047');g.addColorStop(.55,'#fb923c');g.addColorStop(1,'#ef4444');ctx.fillStyle=g;ctx.fillText(t('اللانهاية','Race'),200,175);
+  ctx.shadowBlur=0;ctx.font='34px Arial';ctx.fillText('🏎️',285,195);
+  ctx.restore();
+}
 function home(){
   bg();
   ctx.fillStyle='rgba(0,0,0,.35)';
