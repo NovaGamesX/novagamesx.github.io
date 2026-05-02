@@ -75,6 +75,7 @@ function redrawScreen(){
   else if(screen==='instructions')instructionsPage();
   else if(screen==='rate')ratePage();
   else if(screen==='end')drawEndScreen();
+    else if(screen==='pause')drawPauseScreen();
   startHomeAnimation();
 }
 window.addEventListener('resize',()=>{
@@ -600,12 +601,22 @@ function updatePlayer(){
 function hit(a,b,p=8){return a.x+p<b.x+b.width-p&&a.x+a.width-p>b.x+p&&a.y+p<b.y+b.height-p&&a.y+a.height-p>b.y+p}
 function hitC(c){return player.x<c.x+c.r&&player.x+player.width>c.x-c.r&&player.y<c.y+c.r&&player.y+player.height>c.y-c.r}
 function lose(){if(invincibleTimer>0)return;if(vibration&&navigator.vibrate)navigator.vibrate(120);shakeTimer=8;crashFlash=10;if(shield>0){shield--;invincibleTimer=95;beep('power');return}lives--;invincibleTimer=95;beep('crash');if(lives<=0)endGame()}
+function drawStaticBg(){
+  const oldRoad=roadLineOffset;
+  const oldCity=cityOffset;
+  const oldDecor=decorOffset;
+  bg();
+  roadLineOffset=oldRoad;
+  cityOffset=oldCity;
+  decorOffset=oldDecor;
+}
+
 function drawPauseScreen(){
   screen='pause';
   pauseTop.textContent='▶';
 
-  // خلفية متحركة مثل الصفحة الرئيسية
-  bg();
+  // خلفية ثابتة في صفحة الإيقاف
+  drawStaticBg();
   ctx.fillStyle='rgba(0,0,0,.55)';
   ctx.fillRect(0,0,GAME_W,GAME_H);
 
@@ -638,7 +649,7 @@ function togglePause(){
   paused=!paused;
   if(paused){
     cancelAnimationFrame(animationId);
-    drawPauseScreen();
+    startHomeAnimation();
   }else{
     screen='game';
     pauseTop.textContent='⏸';
