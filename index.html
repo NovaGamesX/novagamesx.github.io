@@ -603,21 +603,33 @@ function lose(){if(invincibleTimer>0)return;if(vibration&&navigator.vibrate)navi
 function drawPauseScreen(){
   screen='pause';
   pauseTop.textContent='▶';
-  ctx.clearRect(0,0,GAME_W,GAME_H);
+
+  // خلفية متحركة مثل الصفحة الرئيسية
   bg();
-  ctx.fillStyle='rgba(0,0,0,.62)';
+  ctx.fillStyle='rgba(0,0,0,.55)';
   ctx.fillRect(0,0,GAME_W,GAME_H);
-  panel(55,220,290,245,22);
+
+  // صفحة أكبر عشان كل شيء يدخل بشكل مرتب
+  panel(45,170,310,365,24);
+
   ctx.textAlign='center';
   ctx.font='900 32px Arial';
   ctx.fillStyle='white';
-  ctx.fillText(t('إيقاف مؤقت','Paused'),200,285);
+  ctx.fillText(t('إيقاف مؤقت','Paused'),200,230);
+
   ctx.font='16px Arial';
   ctx.fillStyle='#cbd5e1';
-  ctx.fillText(t('اضغط متابعة للرجوع','Tap continue to return'),200,322);
-  bigButton(80,350,240,50,t('متابعة','Continue'),'▶','#22c55e','#15803d');
-  bigButton(80,410,240,50,t('الصفحة الرئيسية','Home'),'🏠','#2563eb','#1e40af');
-  drawAdSlot(80,470,240,28,t('📢 إعلان','📢 Ad'));
+  ctx.fillText(t('اضغط متابعة للرجوع','Tap continue to return'),200,265);
+
+  // زر متابعة: حركة + إضاءة
+  bigButton(80,300,240,48,t('متابعة','Continue'),'▶','#22c55e','#15803d','start');
+
+  // أزرار عادية تتحرك حركة خفيفة فقط
+  bigButton(80,360,240,46,t('الإعدادات','Settings'),'⚙️','#64748b','#334155','move');
+  bigButton(80,418,240,46,t('الصفحة الرئيسية','Home'),'🏠','#2563eb','#1e40af','move');
+
+  // الإعلان داخل الصفحة تحت الأزرار
+  drawAdSlot(80,482,240,28,t('📢 إعلان','📢 Ad'));
   ctx.textAlign='start';
 }
 
@@ -1001,8 +1013,9 @@ pauseTop.addEventListener('click',()=>{if(screen==='home')shareGameLink();else i
 
 function handleCanvasTap(x,y){
   if(screen==='pause'){
-    if(x>80&&x<320&&y>350&&y<400){togglePause();return}
-    if(x>80&&x<320&&y>410&&y<460){paused=false;gameRunning=false;cancelAnimationFrame(animationId);showHome();return}
+    if(x>80&&x<320&&y>300&&y<348){beep('power');softVibrate(35);togglePause();return}
+    if(x>80&&x<320&&y>360&&y<406){settingsPage();return}
+    if(x>80&&x<320&&y>418&&y<464){paused=false;gameRunning=false;cancelAnimationFrame(animationId);showHome();return}
   }
   if(screen==='home'){
     if(x>70&&x<330&&y>300&&y<362){softVibrate(25);beep('power');startGame();return}
