@@ -75,6 +75,8 @@ function redrawScreen(){
   else if(screen==='instructions')instructionsPage();
   else if(screen==='rate')ratePage();
   else if(screen==='end')drawEndScreen();
+  else if(screen==='end')drawEndScreen();
+  startHomeAnimation();
 }
 window.addEventListener('resize',()=>{setAppHeight();if(!gameRunning||paused)redrawScreen();else setupHiDPICanvas();});
 // منع سحب الصفحة في الجوال أثناء اللعب فقط بدون تعطيل الأزرار
