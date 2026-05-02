@@ -496,10 +496,10 @@ function gameLoop(time=performance.now()){
 
   if(!lastFrameTime)lastFrameTime=time;
 
-  // سرعة ثابتة وسلسة على الأجهزة القوية والضعيفة
+  // سرعة ثابتة حسب الوقت الحقيقي: تمنع بطء الأجهزة الضعيفة وتقلل التذبذب
   let rawDelta=(time-lastFrameTime)/16.67;
-  rawDelta=Math.min(1.18,Math.max(0.90,rawDelta));
-  smoothDeltaScale+=(rawDelta-smoothDeltaScale)*0.10;
+  rawDelta=Math.min(2.25,Math.max(0.65,rawDelta));
+  smoothDeltaScale+=(rawDelta-smoothDeltaScale)*0.35;
   deltaScale=smoothDeltaScale;
   lastFrameTime=time;
 
@@ -550,10 +550,10 @@ function gameLoop(time=performance.now()){
   score=Math.floor(scoreFloat);
   level=Math.floor(score/1000)+1;
 
-  // سرعة تدريجية خفيفة جدًا، بدون قفزات مفاجئة
-  const baseSpeed=3;
-  const gradualSpeed=score/3500;
-  obstacleSpeed=Math.min(5.7,baseSpeed+gradualSpeed);
+  // سرعة تدريجية ناعمة وثابتة، بدون قفزات مفاجئة وبدون بطء على الأجهزة الضعيفة
+  const baseSpeed=3.35;
+  const gradualSpeed=score/5500;
+  obstacleSpeed=Math.min(5.4,baseSpeed+gradualSpeed);
 
   for(let i=coinItems.length-1;i>=0;i--){
     if(hitC(coinItems[i])){
