@@ -180,15 +180,20 @@ let unlockedCars=JSON.parse(localStorage.getItem('unlockedCars')||'["red"]');
 let selectedCar=localStorage.getItem('selectedCar')||'red';
 
 const carColors={
-  red:{name:['سبورت أحمر','Sport Coupe'],price:0,color:'#ef4444',glass:'#111827',type:'sport',tier:1},
-  yellow:{name:['كلاسيك ذهبي','Golden GT'],price:40,color:'#facc15',glass:'#1f2937',type:'gt',tier:2},
-  blue:{name:['ريسر أزرق','Blue Racer'],price:80,color:'#2563eb',glass:'#bfdbfe',type:'race',tier:3},
-  white:{name:['فاخر أبيض','Luxury White'],price:140,color:'#f8fafc',glass:'#1e293b',type:'luxury',tier:4},
-  green:{name:['SUV رياضي','Sport SUV'],price:220,color:'#22c55e',glass:'#bbf7d0',type:'suv',tier:5},
-  purple:{name:['نيون بنفسجي','Neon Hyper'],price:320,color:'#9333ea',glass:'#e9d5ff',type:'neon',tier:6},
-  black:{name:['فانتوم أسود','Black Phantom'],price:450,color:'#0f172a',glass:'#cbd5e1',type:'hyper',tier:7},
-  cyan:{name:['سايبر سوبر','Cyber Supercar'],price:650,color:'#06b6d4',glass:'#cffafe',type:'cyber',tier:8}
+  red:{name:['فيراري سبورت','Ferrari Sport'],price:0,color:'#ef4444',glass:'#111827',type:'sport',tier:1},
+  blue:{name:['لامبورغيني أزرق','Blue Lamborghini'],price:80,color:'#2563eb',glass:'#bfdbfe',type:'race',tier:2},
+  yellow:{name:['ماكلارين GT','McLaren GT'],price:150,color:'#facc15',glass:'#1f2937',type:'gt',tier:3},
+  green:{name:['بورش SUV','Porsche SUV'],price:240,color:'#22c55e',glass:'#bbf7d0',type:'suv',tier:4},
+  purple:{name:['نيون سبورت','Neon Sport'],price:360,color:'#9333ea',glass:'#e9d5ff',type:'neon',tier:5},
+  white:{name:['رولز فاخر','Rolls Luxury'],price:520,color:'#f8fafc',glass:'#1e293b',type:'luxury',tier:6},
+  black:{name:['بوغاتي فانتوم','Bugatti Phantom'],price:720,color:'#0f172a',glass:'#cbd5e1',type:'hyper',tier:7},
+  cyan:{name:['سايبر سوبر','Cyber Super'],price:950,color:'#06b6d4',glass:'#cffafe',type:'cyber',tier:8},
+  orange:{name:['لامبو أورانج','Orange Lambo'],price:1150,color:'#f97316',glass:'#111827',type:'race',tier:9},
+  silver:{name:['سلفر سوبر','Silver Super'],price:1350,color:'#94a3b8',glass:'#e0f2fe',type:'hyper',tier:10},
+  gold:{name:['جولد ليجند','Gold Legend'],price:1600,color:'#eab308',glass:'#1f2937',type:'cyber',tier:11},
+  dark:{name:['دارك نايت','Dark Knight'],price:2000,color:'#020617',glass:'#93c5fd',type:'hyper',tier:12}
 };
+let shopScroll=0,shopTargetScroll=0;
 const themes=[
   {sky:'#25143a',road1:'#25262b',road2:'#101216',side:'#163c2a',name:['المدينة الليلية','Night City']},
   {sky:'#0f2b46',road1:'#293240',road2:'#111827',side:'#14532d',name:['طريق النخيل','Palm Road']},
@@ -310,12 +315,12 @@ function car(x,y,w,h,body,glass='#111827',stripe=true,type='sport'){
   if(type==='bus'){radius=8;topW=w-10;cabinY=-h/2+10;cabinH=34;nose=2}
   if(type==='pickup'){radius=12;topW=w-16;cabinY=-h/2+10;cabinH=26;nose=5}
 
-  // جسم السيارة بتدرج 3D
+  // جسم السيارة الفخم بتدرج 3D واقعي
   let bodyGrad=ctx.createLinearGradient(-w/2,-h/2,w/2,h/2);
-  bodyGrad.addColorStop(0,'rgba(255,255,255,.50)');
-  bodyGrad.addColorStop(.18,body);
-  bodyGrad.addColorStop(.68,body);
-  bodyGrad.addColorStop(1,'rgba(2,6,23,.92)');
+  bodyGrad.addColorStop(0,'rgba(255,255,255,.38)');
+  bodyGrad.addColorStop(.22,body);
+  bodyGrad.addColorStop(.66,body);
+  bodyGrad.addColorStop(1,'rgba(2,6,23,.96)');
   ctx.shadowColor='rgba(0,0,0,.58)';
   ctx.shadowBlur=lowPowerMode?0:16;
   ctx.shadowOffsetY=lowPowerMode?0:7;
@@ -323,98 +328,40 @@ function car(x,y,w,h,body,glass='#111827',stripe=true,type='sport'){
   rr(-w/2,-h/2+2,w,h-4,radius);ctx.fill();
   ctx.shadowBlur=0;ctx.shadowOffsetY=0;
 
-  // مقدمة رياضية مختلفة
-  if(['sport','race','gt','neon','cyber','hyper'].includes(type)){
-    ctx.fillStyle='rgba(255,255,255,.16)';
-    ctx.beginPath();
-    ctx.moveTo(-w/2+10,-h/2+8);
-    ctx.lineTo(0,-h/2-nose);
-    ctx.lineTo(w/2-10,-h/2+8);
-    ctx.lineTo(w/2-8,-h/2+26);
-    ctx.lineTo(-w/2+8,-h/2+26);
-    ctx.closePath();
-    ctx.fill();
-  }
+  // عمق سفلي يعطي شكل سيارة حقيقية
+  ctx.fillStyle='rgba(0,0,0,.24)';
+  rr(-w/2+7,h/2-25,w-14,18,9);ctx.fill();
 
-  // لمعات علوية وجانبية
-  ctx.fillStyle='rgba(255,255,255,.18)';
-  rr(-w/2+6,-h/2+7,w-12,11,7);ctx.fill();
-  ctx.fillStyle='rgba(0,0,0,.22)';
-  rr(-w/2+7,h/2-24,w-14,18,8);ctx.fill();
+  // لمعة علوية ناعمة
+  ctx.fillStyle='rgba(255,255,255,.16)';
+  rr(-w/2+7,-h/2+7,w-14,11,7);ctx.fill();
 
-  // الزجاج
+  // زجاج بتدرج داكن فخم
   let glassGrad=ctx.createLinearGradient(0,cabinY,0,cabinY+cabinH);
-  glassGrad.addColorStop(0,'rgba(255,255,255,.60)');
-  glassGrad.addColorStop(.28,glass);
-  glassGrad.addColorStop(1,'rgba(2,6,23,.85)');
+  glassGrad.addColorStop(0,'rgba(255,255,255,.55)');
+  glassGrad.addColorStop(.25,glass);
+  glassGrad.addColorStop(1,'rgba(2,6,23,.88)');
   ctx.fillStyle=glassGrad;
   rr(-topW/2,cabinY,topW,cabinH,8);ctx.fill();
-  ctx.fillStyle='rgba(255,255,255,.18)';
+  ctx.fillStyle='rgba(255,255,255,.14)';
   rr(-topW/2+5,cabinY+4,topW-10,5,3);ctx.fill();
 
-  // تفاصيل فخامة حسب النوع
+  // جناح خلفي للسيارات الرياضية والفخمة
+  if(['sport','race','gt','neon','cyber','hyper'].includes(type)){
+    ctx.fillStyle='rgba(2,6,23,.84)';
+    rr(-w/2+10,h/2-10,w-20,6,3);ctx.fill();
+    ctx.fillStyle='rgba(255,255,255,.20)';
+    ctx.fillRect(-w/2+16,h/2-12,w-32,2);
+  }
+
+  // خطوط رياضية فقط للسيارات السريعة
   if(type==='sport'||type==='race'||type==='gt'){
-    ctx.fillStyle='rgba(255,255,255,.90)';
-    ctx.fillRect(-7,-h/2+9,4,h-18);
-    ctx.fillRect(4,-h/2+9,4,h-18);
-    ctx.fillStyle='rgba(0,0,0,.20)';
-    rr(-w/2+12,h/2-39,w-24,18,8);ctx.fill();
-  }
-  if(type==='luxury'){
-    ctx.fillStyle='rgba(255,255,255,.78)';
-    rr(-w/2+15,-h/2+7,w-30,5,3);ctx.fill();
-    ctx.fillStyle='rgba(250,204,21,.24)';
-    rr(-w/2+12,h/2-35,w-24,18,9);ctx.fill();
-  }
-  if(type==='suv'){
-    ctx.fillStyle='rgba(0,0,0,.32)';
-    ctx.fillRect(-w/2+7,-h/2+38,w-14,6);
-    ctx.fillStyle='rgba(255,255,255,.18)';
-    rr(-w/2+11,h/2-36,w-22,22,8);ctx.fill();
-  }
-  if(type==='neon'||type==='cyber'||type==='hyper'){
-    ctx.save();
-    ctx.shadowColor=body;ctx.shadowBlur=lowPowerMode?0:23;
-    ctx.strokeStyle='rgba(255,255,255,.85)';ctx.lineWidth=2;
-    rr(-w/2+5,-h/2+5,w-10,h-10,15);ctx.stroke();
-    ctx.strokeStyle=body;ctx.lineWidth=3;
-    ctx.beginPath();ctx.moveTo(-w/2+10,h/2-18);ctx.lineTo(w/2-10,h/2-18);ctx.stroke();
-    ctx.restore();
-  }
-  if(type==='truck'){
-    ctx.fillStyle='rgba(0,0,0,.28)';rr(-w/2+8,-h/2+42,w-16,h/2-2,8);ctx.fill();
-    ctx.fillStyle='rgba(255,255,255,.50)';ctx.fillRect(-w/2+10,-h/2+39,w-20,3);
-  }
-  if(type==='van'){
-    ctx.fillStyle='rgba(255,255,255,.25)';rr(-w/2+10,-h/2+43,w-20,20,7);ctx.fill();
-  }
-  if(type==='tank'){
-    ctx.fillStyle='rgba(15,23,42,.72)';rr(-w/2+8,-h/2+35,w-16,36,8);ctx.fill();
-    ctx.fillStyle='rgba(0,0,0,.55)';ctx.fillRect(-5,-h/2+18,10,50);
-    ctx.fillStyle='rgba(255,255,255,.42)';ctx.fillRect(-w/2+12,-h/2+8,w-24,4);
-  }
-  if(type==='bus'){
-    ctx.fillStyle='rgba(255,255,255,.24)';
-    for(let yy=-h/2+46;yy<h/2-20;yy+=18){rr(-w/2+10,yy,w-20,10,4);ctx.fill();}
-    ctx.fillStyle='rgba(0,0,0,.26)';rr(-w/2+8,h/2-28,w-16,18,6);ctx.fill();
-  }
-  if(type==='pickup'){
-    ctx.fillStyle='rgba(0,0,0,.34)';rr(-w/2+9,-h/2+45,w-18,30,7);ctx.fill();
-    ctx.fillStyle='rgba(255,255,255,.22)';ctx.fillRect(-w/2+13,-h/2+48,w-26,4);
+    ctx.fillStyle='rgba(255,255,255,.62)';
+    ctx.fillRect(-5,-h/2+8,3,h-17);
+    ctx.fillRect(3,-h/2+8,3,h-17);
   }
 
-  // إطارات 3D
-  ctx.fillStyle='#020617';
-  [[-w/2-5,-h/2+16],[w/2-2,-h/2+16],[-w/2-5,h/2-39],[w/2-2,h/2-39]].forEach(a=>{rr(a[0],a[1],8,23,3);ctx.fill();});
-  ctx.fillStyle='rgba(148,163,184,.35)';
-  ctx.fillRect(-w/2-3,-h/2+20,3,12);ctx.fillRect(w/2+1,-h/2+20,3,12);
-  ctx.fillRect(-w/2-3,h/2-35,3,12);ctx.fillRect(w/2+1,h/2-35,3,12);
-
-  // أنوار
-  ctx.fillStyle='#fde68a';
-  ctx.fillRect(-w/2+8,-h/2+4,12,5);ctx.fillRect(w/2-20,-h/2+4,12,5);
-  ctx.fillStyle='rgba(239,68,68,.92)';
-  ctx.fillRect(-w/2+9,h/2-9,12,4);ctx.fillRect(w/2-21,h/2-9,12,4);
+  // تفاصيل فخامة بدون لمبات أمامية
 
   ctx.restore();
 }
@@ -537,9 +484,41 @@ function startHomeAnimation(){
   loop();
 }
 function showHome(){screen='home';gameRunning=false;paused=false;cancelAnimationFrame(animationId);pauseTop.textContent='📤';pauseTop.style.background='linear-gradient(180deg,#0ea5e9,#0369a1)';setMenu();adBox.textContent=t('مكان الإعلان لاحقًا — يظهر بعد نهاية الجولة','Ad space — appears after each round');startHomeAnimation()}
-function shop(){screen='shop';gameRunning=false;paused=false;cancelAnimationFrame(animationId);setMenu();bg();ctx.fillStyle='rgba(0,0,0,.45)';ctx.fillRect(0,0,GAME_W,GAME_H);panel(18,35,364,585,24);ctx.textAlign='center';ctx.font='900 30px Tahoma';ctx.fillStyle='white';ctx.fillText(t('متجر السيارات','Car Shop'),200,85);ctx.fillStyle='#fde047';ctx.font='bold 17px Arial';ctx.fillText(t('عملاتك: ','Coins: ')+coins+' 🪙',200,118);Object.entries(carColors).forEach(([id,c],i)=>{let col=i%2,row=Math.floor(i/2),x=35+col*171,y=145+row*90,owned=unlockedCars.includes(id),sel=selectedCar===id;ctx.fillStyle=sel?'rgba(34,197,94,.34)':'rgba(15,23,42,.82)';rr(x,y,158,74,17);ctx.fill();ctx.strokeStyle=sel?'#86efac':'rgba(148,163,184,.28)';ctx.stroke();car(x+12,y+15,32,45,c.color,c.glass,true,c.type);ctx.fillStyle='white';ctx.font='bold 13px Arial';ctx.fillText(tr(c.name),x+84,y+25);ctx.fillStyle=owned?'#86efac':'#fde68a';ctx.font='12px Arial';ctx.fillText(owned?(sel?t('محدد ✅','Selected ✅'):t('اختيار ','Select ')+(i+1)):t('السعر ','Price ')+c.price+' 🪙',x+84,y+54)});// Ad slot (Shop)
-drawAdSlot(70,520,260,28,t('📢 إعلان المتجر','📢 Shop Ad'));
-bigButton(110,568,180,44,t('رجوع','Back'),'↩','#2563eb','#1e40af');ctx.textAlign='start'}
+function shop(){
+  screen='shop';gameRunning=false;paused=false;cancelAnimationFrame(animationId);setMenu();
+  if(Math.abs(shopTargetScroll-shopScroll)>0.5){shopScroll+=(shopTargetScroll-shopScroll)*0.28}else{shopScroll=shopTargetScroll;}
+
+  bg();ctx.fillStyle='rgba(0,0,0,.45)';ctx.fillRect(0,0,GAME_W,GAME_H);
+  panel(18,35,364,585,24);
+  ctx.textAlign='center';ctx.font='900 30px Tahoma';ctx.fillStyle='white';ctx.fillText(t('متجر السيارات','Car Shop'),200,80);
+  ctx.fillStyle='#fde047';ctx.font='bold 17px Arial';ctx.fillText(t('عملاتك: ','Coins: ')+coins+' 🪙',200,108);
+
+  const entries=Object.entries(carColors);
+  const contentHeight=Math.ceil(entries.length/2)*86;
+  const visibleHeight=375;
+  const maxScroll=Math.max(0,contentHeight-visibleHeight);
+  shopTargetScroll=Math.max(0,Math.min(maxScroll,shopTargetScroll));
+  shopScroll=Math.max(0,Math.min(maxScroll,shopScroll));
+
+  ctx.save();
+  ctx.beginPath();ctx.rect(25,125,350,375);ctx.clip();
+  entries.forEach(([id,c],i)=>{
+    let col=i%2,row=Math.floor(i/2),x=35+col*171,y=135+row*86-shopScroll,owned=unlockedCars.includes(id),sel=selectedCar===id;
+    if(y<-80||y>510)return;
+    ctx.fillStyle=sel?'rgba(34,197,94,.34)':'rgba(15,23,42,.84)';rr(x,y,158,72,17);ctx.fill();
+    ctx.strokeStyle=sel?'#86efac':'rgba(148,163,184,.28)';ctx.lineWidth=1.5;rr(x,y,158,72,17);ctx.stroke();
+    ctx.save();ctx.translate(x+23,y+15);ctx.scale(1.12,1.12);car(0,0,34,48,c.color,c.glass,true,c.type);ctx.restore();
+    ctx.fillStyle='white';ctx.font='bold 12px Arial';ctx.textAlign='center';ctx.fillText(tr(c.name),x+88,y+24);
+    ctx.fillStyle=owned?'#86efac':'#fde68a';ctx.font='12px Arial';
+    ctx.fillText(owned?(sel?t('محدد ✅','Selected ✅'):t('اختيار','Select')):t('السعر ','Price ')+c.price+' 🪙',x+88,y+52);
+  });
+  ctx.restore();
+
+  ctx.fillStyle='rgba(203,213,225,.65)';ctx.font='12px Arial';ctx.textAlign='center';
+  ctx.fillText(t('اسحب للأعلى أو للأسفل لعرض سيارات أكثر','Swipe up/down to see more cars'),200,512);
+  drawAdSlot(70,520,260,28,t('📢 إعلان المتجر','📢 Shop Ad'));
+  bigButton(110,568,180,44,t('رجوع','Back'),'↩','#2563eb','#1e40af');ctx.textAlign='start'
+}
 function settingsPage(){screen='settings';if(Math.abs(settingsTargetScroll-settingsScroll)>0.5){settingsScroll+=(settingsTargetScroll-settingsScroll)*0.28}else{settingsScroll=settingsTargetScroll;}if(settingsReturnScreen==='pause'){paused=true;cancelAnimationFrame(animationId);}else{gameRunning=false;paused=false;cancelAnimationFrame(animationId);}setMenu();bg();ctx.fillStyle='rgba(0,0,0,.5)';ctx.fillRect(0,0,GAME_W,GAME_H);panel(42,80,316,540,24);ctx.textAlign='center';ctx.fillStyle='white';ctx.font='900 30px Tahoma';ctx.fillText(t('الإعدادات','Settings'),200,120);function label(text,y){ctx.font='bold 13px Arial';ctx.fillStyle='rgba(203,213,225,.88)';ctx.textAlign='center';ctx.fillText(text,200,y)}ctx.save();ctx.beginPath();ctx.rect(50,140,300,360);ctx.clip();let y=170-settingsScroll,gap=78;label(t('التحكم','Controls'),y);bigButton(70,y+10,260,46,controlType==='buttons'?t('أزرار','Buttons'):t('سحب','Swipe'),'🎮','#0ea5e9','#0369a1');label(t('الاهتزاز','Vibration'),y+gap);bigButton(70,y+gap+10,260,46,vibration?t('مفعل','On'):t('مغلق','Off'),'📳','#22c55e','#15803d');label(t('اللغة','Language'),y+gap*2);bigButton(70,y+gap*2+10,260,46,lang==='ar'?'English':'العربية','🌐','#7c3aed','#5b21b6');label(t('إعادة ضبط اللعبة','Reset Game'),y+gap*3);bigButton(70,y+gap*3+10,260,46,t('إعادة ضبط','Reset'),'♻️','#ef4444','#991b1b');label(t('تقييم اللعبة','Rate Game'),y+gap*4);bigButton(70,y+gap*4+10,260,46,t('تقييم','Rate'),'⭐','#f59e0b','#b45309');ctx.restore();ctx.fillStyle='rgba(203,213,225,.65)';ctx.font='12px Arial';ctx.textAlign='center';ctx.fillText(t('اسحب للأعلى أو للأسفل لعرض خيارات أكثر','Swipe up/down for more options'),200,520);bigButton(90,545,220,48,t('رجوع','Back'),'↩','#2563eb','#1e40af');ctx.textAlign='start'}
 function ratePage(){screen='rate';gameRunning=false;paused=false;cancelAnimationFrame(animationId);setMenu();bg();ctx.fillStyle='rgba(0,0,0,.55)';ctx.fillRect(0,0,GAME_W,GAME_H);panel(40,160,320,300,24);ctx.textAlign='center';ctx.fillStyle='white';ctx.font='900 28px Tahoma';ctx.fillText(t('تقييم اللعبة','Rate Game'),200,210);ctx.font='16px Arial';ctx.fillStyle='#cbd5e1';ctx.fillText(t('قريبًا سيتم إضافة هذه الميزة ⭐','This feature is coming soon ⭐'),200,260);bigButton(100,340,200,50,t('رجوع','Back'),'↩','#2563eb','#1e40af');ctx.textAlign='start'}
 function instructionsPage(){
@@ -627,7 +606,7 @@ function updateItems(){
   powerTimer+=deltaScale;
 
   // مسافة أوسع بين السيارات عشان اللعب يكون أعدل وأسهل
-  if(obstacleTimer>Math.max(44,74-level*2.1)){
+  if(obstacleTimer>Math.max(42,68-level*1.9)){
     createObstacle();
     obstacleTimer=0;
   }
@@ -1146,8 +1125,9 @@ function handleCanvasTap(x,y){
   }
   if(screen==='shop'){
     if(x>110&&x<290&&y>568&&y<612){showHome();return}
-    let col=x<200?0:1,row=Math.floor((y-145)/90),i=row*2+col;
-    if(i>=0&&i<8)buyOrSelect(i);
+    let sy=y+shopScroll;
+    let col=x<200?0:1,row=Math.floor((sy-135)/86),i=row*2+col;
+    if(x>25&&x<375&&y>125&&y<500&&i>=0&&i<Object.keys(carColors).length)buyOrSelect(i);
     return;
   }
   if(screen==='settings'){
@@ -1247,6 +1227,12 @@ canvas.addEventListener('pointerup',e=>{
     settingsPage();
     return;
   }
+  if(screen==='shop'){
+    const maxScroll=Math.max(0,Math.ceil(Object.keys(carColors).length/2)*86-375);
+    shopTargetScroll=Math.max(0,Math.min(maxScroll,shopTargetScroll-dy*.45));
+    shop();
+    return;
+  }
   if(screen==='game')return;
 },{passive:false});
 canvas.addEventListener('pointercancel',()=>{pointerDown=false});
@@ -1268,6 +1254,8 @@ document.addEventListener('keydown',e=>{
   if(e.key==='Enter')startGame();
   if(e.key===' '){e.preventDefault();togglePause()}
   if(screen==='shop'&&['1','2','3','4','5','6','7','8'].includes(e.key))buyOrSelect(Number(e.key)-1);
+  if(screen==='shop'&&e.key==='ArrowUp'){shopTargetScroll=Math.max(0,shopTargetScroll-90);shop()}
+  if(screen==='shop'&&e.key==='ArrowDown'){const maxScroll=Math.max(0,Math.ceil(Object.keys(carColors).length/2)*86-375);shopTargetScroll=Math.min(maxScroll,shopTargetScroll+90);shop()}
 });
 document.addEventListener('keyup',e=>{
   if(e.key==='ArrowLeft'||e.key==='a')keys.left=false;
@@ -1275,10 +1263,18 @@ document.addEventListener('keyup',e=>{
 });
 
 canvas.addEventListener('wheel',e=>{
-  if(screen!=='settings')return;
-  e.preventDefault();
-  settingsTargetScroll=Math.max(0,Math.min(95,settingsTargetScroll+e.deltaY*.25));
-  settingsPage();
+  if(screen==='settings'){
+    e.preventDefault();
+    settingsTargetScroll=Math.max(0,Math.min(95,settingsTargetScroll+e.deltaY*.25));
+    settingsPage();
+    return;
+  }
+  if(screen==='shop'){
+    e.preventDefault();
+    const maxScroll=Math.max(0,Math.ceil(Object.keys(carColors).length/2)*86-375);
+    shopTargetScroll=Math.max(0,Math.min(maxScroll,shopTargetScroll+e.deltaY*.35));
+    shop();
+  }
 },{passive:false});
 
 setupHiDPICanvas();
