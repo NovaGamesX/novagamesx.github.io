@@ -459,14 +459,65 @@ function handleCanvasTap(x,y){
     if(x>70&&x<330&&y>530&&y<582){shareGame();return}
   }
 }
-canvas.addEventListener('click',e=>{
-  if(Date.now()-lastTouchEndTime<450)return;
+let pointerStartX=0,pointerStartY=0,pointerMoved=false,pointerDown=false,lastPointerTap=0;
+
+canvas.addEventListener('pointerdown',e=>{
+  if(e.target!==canvas)return;
+  e.preventDefault();
   unlockAudio();
+  pointerDown=true;
+  pointerMoved=false;
+  pointerStartX=e.clientX;
+  pointerStartY=e.clientY;
+  try{canvas.setPointerCapture(e.pointerId)}catch(err){}
+},{passive:false});
+
+canvas.addEventListener('pointermove',e=>{
+  if(!pointerDown)return;
+  e.preventDefault();
+  const dx=e.clientX-pointerStartX;
+  const dy=e.clientY-pointerStartY;
+  if(Math.abs(dx)>12||Math.abs(dy)>12)pointerMoved=true;
+},{passive:false});
+
+canvas.addEventListener('pointerup',e=>{
+  if(!pointerDown)return;
+  e.preventDefault();
+  pointerDown=false;
+
   const r=canvas.getBoundingClientRect();
-  const x=(e.clientX-r.left)*(GAME_W/r.width);
-  const y=(e.clientY-r.top)*(GAME_H/r.height);
-  handleCanvasTap(x,y);
-});
+  const endX=e.clientX;
+  const endY=e.clientY;
+  const dx=endX-pointerStartX;
+  const dy=endY-pointerStartY;
+
+  // ضغطة حقيقية فقط، بدون سحب
+  if(!pointerMoved&&Math.abs(dx)<18&&Math.abs(dy)<18){
+    const now=Date.now();
+    if(now-lastPointerTap<250)return;
+    lastPointerTap=now;
+    const x=(endX-r.left)*(GAME_W/r.width);
+    const y=(endY-r.top)*(GAME_H/r.height);
+    handleCanvasTap(x,y);
+    return;
+  }
+
+  // الإعدادات فقط تسمح بالسحب للتمرير
+  if(screen==='settings'){
+    if(Math.abs(dy)>25){
+      settingsScroll=Math.max(0,Math.min(95,settingsScroll-dy));
+      settingsPage();
+    }
+    return;
+  }
+
+  // داخل اللعب: تجاهل السحب العمودي نهائيًا، ولا تسمح إلا بسحب يمين/يسار لو وضع التحكم سحب
+  if(screen==='game'&&controlType==='swipe'&&Math.abs(dx)>35&&Math.abs(dx)>Math.abs(dy)){
+    player.x=dx>0?Math.min(player.x+92,300):Math.max(player.x-92,42);
+  }
+},{passive:false});
+
+canvas.addEventListener('pointercancel',()=>{pointerDown=false});
 
 document.addEventListener('keydown',e=>{if(e.key==='ArrowLeft'||e.key==='a')keys.left=true;if(e.key==='ArrowRight'||e.key==='d')keys.right=true;if(e.key==='Enter')startGame();if(e.key===' '){e.preventDefault();togglePause()}if(screen==='shop'&&['1','2','3','4','5','6','7','8'].includes(e.key))buyOrSelect(Number(e.key)-1)});
 document.addEventListener('keyup',e=>{if(e.key==='ArrowLeft'||e.key==='a')keys.left=false;if(e.key==='ArrowRight'||e.key==='d')keys.right=false});
@@ -480,64 +531,6 @@ function bindBtn(b,side){
   b.addEventListener('mouseleave',()=>keys[side]=false);
 }
 bindBtn(leftBtn,'left');bindBtn(rightBtn,'right');
-let touchStartX=0,touchStartY=0;
-let touchMoved=false;
-let lastTapTime=0;
-let lastTouchEndTime=0;
-
-canvas.addEventListener('touchstart',e=>{
-  unlockAudio();
-  touchStartX=e.touches[0].clientX;
-  touchStartY=e.touches[0].clientY;
-  touchMoved=false;
-},{passive:true});
-
-canvas.addEventListener('touchmove',e=>{
-  const dx=e.touches[0].clientX-touchStartX;
-  const dy=e.touches[0].clientY-touchStartY;
-  if(Math.abs(dx)>15||Math.abs(dy)>15)touchMoved=true;
-  // داخل اللعب فقط نمنع السحب العمودي من تحريك الصفحة أو التأثير على اللعبة
-  if(screen==='game')e.preventDefault();
-},{passive:false});
-
-canvas.addEventListener('touchend',e=>{
-  lastTouchEndTime=Date.now();
-  const r=canvas.getBoundingClientRect();
-  const endX=e.changedTouches[0].clientX;
-  const endY=e.changedTouches[0].clientY;
-  const dx=endX-touchStartX;
-  const dy=endY-touchStartY;
-
-  // إذا كانت لمسة عادية فقط، نفذ ضغطة واحدة ومنع الضغطات الوهمية
-  if(!touchMoved&&Math.abs(dx)<18&&Math.abs(dy)<18){
-    const now=Date.now();
-    if(now-lastTapTime<350)return;
-    lastTapTime=now;
-    const x=(endX-r.left)*(GAME_W/r.width);
-    const y=(endY-r.top)*(GAME_H/r.height);
-    handleCanvasTap(x,y);
-    return;
-  }
-
-  // الإعدادات: السحب فقط للتمرير داخل القائمة، بدون ضغط أزرار
-  if(screen==='settings'){
-    if(Math.abs(dy)>25){
-      settingsScroll=Math.max(0,Math.min(95,settingsScroll-dy));
-      settingsPage();
-    }
-    return;
-  }
-
-  // صندوق الهدية: افتح فقط إذا كانت لمسة عادية، وليس سحب
-  if(screen==='gift')return;
-
-  // داخل اللعب: تجاهل السحب العمودي، واسمح فقط بالسحب يمين/يسار إذا اخترت السحب
-  if(controlType!=='swipe'||screen!=='game')return;
-  if(Math.abs(dx)>35&&Math.abs(dx)>Math.abs(dy)){
-    player.x=dx>0?Math.min(player.x+92,300):Math.max(player.x-92,42);
-  }
-},{passive:true});
-
 canvas.addEventListener('wheel',e=>{if(screen!=='settings')return;e.preventDefault();settingsScroll=Math.max(0,Math.min(95,settingsScroll+e.deltaY));settingsPage()},{passive:false});
 setupHiDPICanvas();ui();showHome();
 </script>
