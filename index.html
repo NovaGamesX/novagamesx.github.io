@@ -826,6 +826,16 @@ function endGame(){
   startHomeAnimation();
 }
 
+function showEndScreenAnimated(){
+  screen='end';
+  gameRunning=false;
+  paused=false;
+  cancelAnimationFrame(animationId);
+  stopHomeAnimation();
+  drawEndScreen();
+  requestAnimationFrame(()=>startHomeAnimation());
+}
+
 function drawEndScreen(){
   screen='end';
   if(giftAnimationId){cancelAnimationFrame(giftAnimationId);giftAnimationId=null}
@@ -974,7 +984,7 @@ function playGiftExplosion(rewardIcon,message){
     ctx.fillStyle='white';ctx.font='bold 19px Arial';ctx.fillText('🎁 '+message,200,410);
     ctx.fillStyle='#cbd5e1';ctx.font='14px Arial';ctx.fillText(t('سيتم الرجوع لشاشة النهاية','Returning to game over'),200,448);
     ctx.textAlign='start';
-    if(elapsed<2100)requestAnimationFrame(drawExplosion);else{drawEndScreen();startHomeAnimation();}
+    if(elapsed<2100)requestAnimationFrame(drawExplosion);else showEndScreenAnimated();
   }
   drawExplosion();
 }
