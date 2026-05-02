@@ -303,6 +303,8 @@ function car(x,y,w,h,body,glass='#111827',stripe=true,type='sport'){
   if(type==='truck'){radius=9;topW=w-12;cabinY=-h/2+8;cabinH=30}
   if(type==='van'){radius=11;topW=w-14;cabinY=-h/2+10;cabinH=28}
   if(type==='tank'){radius=8;topW=w-18;cabinY=-h/2+16;cabinH=20}
+  if(type==='bus'){radius=8;topW=w-10;cabinY=-h/2+10;cabinH=34}
+  if(type==='pickup'){radius=12;topW=w-16;cabinY=-h/2+10;cabinH=26}
 
   // جسم السيارة الأساسي
   let gr=ctx.createLinearGradient(-w/2,0,w/2,0);
@@ -366,6 +368,20 @@ function car(x,y,w,h,body,glass='#111827',stripe=true,type='sport'){
     ctx.fillRect(-5,-h/2+18,10,50);
     ctx.fillStyle='rgba(255,255,255,.45)';
     ctx.fillRect(-w/2+12,-h/2+8,w-24,4);
+  }
+  if(type==='bus'){
+    ctx.fillStyle='rgba(255,255,255,.28)';
+    for(let yy=-h/2+46;yy<h/2-20;yy+=18){
+      rr(-w/2+10,yy,w-20,10,4);ctx.fill();
+    }
+    ctx.fillStyle='rgba(0,0,0,.28)';
+    rr(-w/2+8,h/2-28,w-16,18,6);ctx.fill();
+  }
+  if(type==='pickup'){
+    ctx.fillStyle='rgba(0,0,0,.34)';
+    rr(-w/2+9,-h/2+45,w-18,30,7);ctx.fill();
+    ctx.fillStyle='rgba(255,255,255,.22)';
+    ctx.fillRect(-w/2+13,-h/2+48,w-26,4);
   }
 
   // الإطارات
@@ -567,20 +583,76 @@ async function shareGameLink(){
 }
 async function shareGame(){const text=t('🔥 لعبت سباق اللانهاية وجبت '+score+' نقطة!','🔥 I scored '+score+' in Infinity Race!');const url=window.location.href;try{canvas.toBlob(async(blob)=>{try{if(blob&&navigator.share&&window.File&&navigator.canShare){const file=new File([blob],'infinity-race-score.png',{type:'image/png'});if(navigator.canShare({files:[file]})){await navigator.share({title:t('نتيجتي في اللعبة','My Game Score'),text:text,url:url,files:[file]});return}}if(navigator.share){await navigator.share({title:t('سباق اللانهاية','Infinity Race'),text:text,url:url});return}if(navigator.clipboard){await navigator.clipboard.writeText(text+' '+url);adBox.textContent=t('تم نسخ رابط اللعبة 📋','Game link copied 📋')}}catch(e){adBox.textContent=t('تعذر المشاركة','Share failed')}} ,'image/png')}catch(e){adBox.textContent=t('تعذر المشاركة','Share failed')}}
 function createObstacle(){
-  let lanes=[82,173,264];
-  let x=lanes[Math.floor(Math.random()*lanes.length)];
-  let cols=['#ef4444','#2563eb','#f8fafc','#facc15','#64748b','#16a34a'];
-  let typePool=['classic','suv','race','sport','truck','van','tank'];
+  const lanes=[82,173,264];
+  let laneIndex=Math.floor(Math.random()*lanes.length);
+  let x=lanes[laneIndex];
+  let cols=['#ef4444','#2563eb','#f8fafc','#facc15','#64748b','#16a34a','#0f172a','#9333ea'];
+  let typePool=['classic','suv','race','sport','truck','van','tank','bus','pickup'];
   let type=typePool[Math.floor(Math.random()*typePool.length)];
   let w=58,h=88;
-  if(type==='truck'){w=64;h=104;x-=3}
+  if(type==='truck'){w=64;h=108;x-=3}
   if(type==='van'){w=62;h=96;x-=2}
-  if(type==='tank'){w=66;h=90;x-=4}
-  obstacles.push({x,y:-120,width:w,height:h,color:cols[Math.floor(Math.random()*cols.length)],glass:'#111827',type,moving:Math.random()<0.35,dir:Math.random()<.5?-1:1,wobble:Math.random()*100})
+  if(type==='tank'){w=66;h=92;x-=4}
+  if(type==='bus'){w=66;h=118;x-=4}
+  if(type==='pickup'){w=62;h=96;x-=2}
+
+  const moving=Math.random()<0.32;
+  let possibleTargets=lanes.map(v=>v-(w-58)/2).filter(v=>Math.abs(v-x)>20);
+  let targetX=moving?possibleTargets[Math.floor(Math.random()*possibleTargets.length)]:x;
+
+  obstacles.push({x,y:-140,width:w,height:h,color:cols[Math.floor(Math.random()*cols.length)],glass:'#111827',type,moving,targetX,moveSpeed:.012+Math.random()*.010,waitTimer:30+Math.random()*90,laneIndex,wobble:Math.random()*100})
 }
 function createCoin(){let lanes=[92,183,274],x=lanes[Math.floor(Math.random()*lanes.length)];coinItems.push({x,y:-35,r:15,pulse:Math.random()*6})}
 function createPower(){let lanes=[92,183,274],x=lanes[Math.floor(Math.random()*lanes.length)],type=Math.random()<.5?'magnet':'shield';powers.push({x,y:-45,r:19,type,pulse:0})}
-function updateItems(){obstacleTimer+=deltaScale;coinTimer+=deltaScale;powerTimer+=deltaScale;if(obstacleTimer>Math.max(23,58-level*3)){createObstacle();obstacleTimer=0}if(coinTimer>68){createCoin();coinTimer=0}if(powerTimer>500){createPower();powerTimer=0}obstacles.forEach(o=>{o.y+=obstacleSpeed*deltaScale;o.wobble+=.04;if(level>1&&o.moving){o.x+=Math.sin(o.wobble)*0.65+o.dir*0.22*Math.min(level,5);if(o.x<62||o.x>282)o.dir*=-1}});coinItems.forEach(c=>{if(magnetTimer>0){let dx=(player.x+player.width/2)-c.x,dy=(player.y+player.height/2)-c.y,d=Math.max(1,Math.sqrt(dx*dx+dy*dy));if(d<185){c.x+=dx/d*6*deltaScale;c.y+=dy/d*6*deltaScale}}c.y+=obstacleSpeed*deltaScale;c.pulse+=.16});powers.forEach(p=>{p.y+=obstacleSpeed*deltaScale;p.pulse+=.13});obstacles=obstacles.filter(o=>o.y<GAME_H+100);coinItems=coinItems.filter(c=>c.y<GAME_H+50);powers=powers.filter(p=>p.y<GAME_H+50)}
+function updateItems(){
+  obstacleTimer+=deltaScale;
+  coinTimer+=deltaScale;
+  powerTimer+=deltaScale;
+
+  // مسافة أوسع بين السيارات عشان اللعب يكون أعدل وأسهل
+  if(obstacleTimer>Math.max(46,82-level*2.2)){
+    createObstacle();
+    obstacleTimer=0;
+  }
+  if(coinTimer>68){createCoin();coinTimer=0}
+  if(powerTimer>500){createPower();powerTimer=0}
+
+  obstacles.forEach(o=>{
+    o.y+=obstacleSpeed*deltaScale;
+    o.wobble+=.025*deltaScale;
+
+    // حركة تدريجية ناعمة: بعض السيارات تتحرك يمين/يسار بالشويش وتوقف قليلًا
+    if(level>1&&o.moving){
+      if(o.waitTimer>0){
+        o.waitTimer-=deltaScale;
+      }else{
+        o.x+=(o.targetX-o.x)*o.moveSpeed*deltaScale;
+        if(Math.abs(o.targetX-o.x)<1.5){
+          o.x=o.targetX;
+          o.waitTimer=45+Math.random()*100;
+          if(Math.random()<.65){
+            const lanes=[82,173,264].map(v=>v-(o.width-58)/2);
+            const options=lanes.filter(v=>Math.abs(v-o.x)>25);
+            o.targetX=options[Math.floor(Math.random()*options.length)]||o.x;
+          }
+        }
+      }
+    }
+  });
+
+  coinItems.forEach(c=>{
+    if(magnetTimer>0){
+      let dx=(player.x+player.width/2)-c.x,dy=(player.y+player.height/2)-c.y,d=Math.max(1,Math.sqrt(dx*dx+dy*dy));
+      if(d<185){c.x+=dx/d*6*deltaScale;c.y+=dy/d*6*deltaScale}
+    }
+    c.y+=obstacleSpeed*deltaScale;
+    c.pulse+=.16;
+  });
+  powers.forEach(p=>{p.y+=obstacleSpeed*deltaScale;p.pulse+=.13});
+  obstacles=obstacles.filter(o=>o.y<GAME_H+130);
+  coinItems=coinItems.filter(c=>c.y<GAME_H+50);
+  powers=powers.filter(p=>p.y<GAME_H+50);
+}
 function drawCoins(){coinItems.forEach(c=>{ctx.save();let r=c.r+Math.sin(c.pulse)*2;ctx.shadowColor='rgba(250,204,21,1)';ctx.shadowBlur=lowPowerMode?0:28;ctx.fillStyle='#facc15';ctx.beginPath();ctx.arc(c.x,c.y,r,0,Math.PI*2);ctx.fill();ctx.globalAlpha=.25;ctx.beginPath();ctx.arc(c.x,c.y,r+12,0,Math.PI*2);ctx.fill();ctx.globalAlpha=1;ctx.strokeStyle='#fef3c7';ctx.lineWidth=3;ctx.stroke();ctx.fillStyle='#92400e';ctx.font='bold 17px Arial';ctx.textAlign='center';ctx.fillText('$',c.x,c.y+6);ctx.restore()})}
 function drawPowers(){powers.forEach(p=>{ctx.save();let r=p.r+Math.sin(p.pulse)*3;ctx.shadowColor=p.type==='magnet'?'rgba(59,130,246,1)':'rgba(34,197,94,1)';ctx.shadowBlur=lowPowerMode?0:30;ctx.fillStyle=p.type==='magnet'?'#2563eb':'#16a34a';ctx.beginPath();ctx.arc(p.x,p.y,r,0,Math.PI*2);ctx.fill();ctx.strokeStyle='white';ctx.lineWidth=2;ctx.stroke();ctx.font='bold 21px Arial';ctx.textAlign='center';ctx.fillStyle='white';ctx.fillText(p.type==='magnet'?'🧲':'🛡️',p.x,p.y+8);ctx.restore()})}
 function drawGameNumbers(){ctx.save();ctx.fillStyle='rgba(2,6,23,.45)';rr(15,14,112,34,11);ctx.fill();rr(273,14,112,34,11);ctx.fill();ctx.fillStyle='rgba(255,255,255,.78)';ctx.font='bold 14px Arial';ctx.textAlign='center';ctx.fillText(t('أفضل: ','Best: ')+bestScore,71,36);ctx.fillText(t('نقاط: ','Score: ')+score,329,36);ctx.restore()}
