@@ -70,10 +70,11 @@ function setupHiDPICanvas(){
 function redrawScreen(){
   setupHiDPICanvas();
   if(screen==='home')home();
-  else if(screen==='shop')shop();
-  else if(screen==='settings')settingsPage();
-  else if(screen==='instructions')instructionsPage();
-  else if(screen==='rate')ratePage();
+    else if(screen==='shop')shop();
+    else if(screen==='settings')settingsPage();
+    else if(screen==='instructions')instructionsPage();
+    else if(screen==='rate')ratePage();
+    else if(screen==='end')drawEndScreen();
   else if(screen==='end')drawEndScreen();
   else if(screen==='end')drawEndScreen();
   startHomeAnimation();
@@ -403,7 +404,7 @@ function bigButton(x,y,w,h,text,icon,c1,c2,mode='normal'){
 }
 function tapEffect(x,y){ctx.save();ctx.fillStyle='rgba(255,255,255,.18)';ctx.beginPath();ctx.arc(x,y,26,0,Math.PI*2);ctx.fill();ctx.strokeStyle='rgba(255,255,255,.35)';ctx.lineWidth=2;ctx.stroke();ctx.restore()}
 function drawAdSlot(x,y,w,h,label){ctx.save();ctx.fillStyle='rgba(15,23,42,.72)';rr(x,y,w,h,10);ctx.fill();ctx.setLineDash([6,5]);ctx.strokeStyle='rgba(250,204,21,.55)';ctx.lineWidth=1.5;rr(x,y,w,h,10);ctx.stroke();ctx.setLineDash([]);ctx.fillStyle='rgba(250,204,21,.88)';ctx.font='bold 12px Arial';ctx.textAlign='center';ctx.fillText(label||t('📢 مساحة إعلان','📢 Ad Space'),x+w/2,y+h/2+4);ctx.restore()}
-function logo(){ctx.textAlign='center';ctx.font='900 40px Tahoma';ctx.lineWidth=7;ctx.strokeStyle='#020617';ctx.strokeText(t('سباق','Infinity'),200,140);ctx.fillStyle='white';ctx.fillText(t('سباق','Infinity'),200,140);ctx.font='900 47px Tahoma';ctx.strokeText(t('اللانهاية','Race'),200,185);let g=ctx.createLinearGradient(120,180,280,225);g.addColorStop(0,'#fde047');g.addColorStop(1,'#f97316');ctx.fillStyle=g;ctx.fillText(t('اللانهاية','Race'),200,185);ctx.font='34px Arial';ctx.fillText('🏎️',285,205)}
+function logo(){ctx.textAlign='center';ctx.font='900 40px Tahoma';ctx.lineWidth=7;ctx.strokeStyle='#020617';ctx.strokeText(t('سباق','Infinity'),200,155);ctx.fillStyle='white';ctx.fillText(t('سباق','Infinity'),200,155);ctx.font='900 47px Tahoma';ctx.strokeText(t('اللانهاية','Race'),200,200);let g=ctx.createLinearGradient(120,195,280,240);g.addColorStop(0,'#fde047');g.addColorStop(1,'#f97316');ctx.fillStyle=g;ctx.fillText(t('اللانهاية','Race'),200,200);ctx.font='34px Arial';ctx.fillText('🏎️',285,220)}
 function home(){
   bg();
   ctx.fillStyle='rgba(0,0,0,.35)';
@@ -412,24 +413,25 @@ function home(){
   logo();
 
   ctx.textAlign='center';
-  // عرض الإحصائيات في الصفحة الرئيسية بدون شريط (مثل HUD)
+  // إحصائيات الصفحة الرئيسية فوق الاسم - نفس أسلوب HUD وبترتيب من اليمين لليسار
 ctx.save();
-ctx.fillStyle='white';
-ctx.font='bold 16px Arial';
 ctx.textAlign='center';
-
-let spacing=55;
-let startX=200-(spacing*1.5);
-
-let stats=[
-  '🏆 '+bestScore,
-  '❤️ 3',
-  '🪙 '+coins,
-  '💎 '+unlockedCars.length
+const homeStats=[
+  {x:244,w:84,text:'🏆 '+bestScore},
+  {x:186,w:50,text:'❤️ 3'},
+  {x:110,w:68,text:'🪙 '+coins},
+  {x:62,w:40,text:'💎 '+unlockedCars.length}
 ];
-
-stats.forEach((s,i)=>{
-  ctx.fillText(s,startX+(i*spacing),260);
+homeStats.forEach(s=>{
+  let hg=ctx.createLinearGradient(0,62,0,102);
+  hg.addColorStop(0,'rgba(15,23,42,.98)');
+  hg.addColorStop(1,'rgba(2,6,23,.95)');
+  ctx.fillStyle=hg;
+  rr(s.x,64,s.w,38,12);ctx.fill();
+  ctx.strokeStyle='rgba(148,163,184,.45)';ctx.lineWidth=1.6;rr(s.x,64,s.w,38,12);ctx.stroke();
+  ctx.fillStyle='white';
+  ctx.font='900 13px Arial';
+  ctx.fillText(s.text,s.x+s.w/2,88);
 });
 ctx.restore();
 
@@ -770,6 +772,7 @@ function endGame(){
   saveData();
   ui();
   drawEndScreen();
+  startHomeAnimation();
 }
 
 function drawEndScreen(){
