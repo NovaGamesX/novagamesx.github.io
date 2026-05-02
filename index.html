@@ -646,11 +646,16 @@ function drawPauseScreen(){
 
 function togglePause(){
   if(screen!=='game' && screen!=='pause')return;
+
   paused=!paused;
+
   if(paused){
     cancelAnimationFrame(animationId);
+    screen='pause';
+    drawPauseScreen();
     startHomeAnimation();
   }else{
+    stopHomeAnimation();
     screen='game';
     pauseTop.textContent='⏸';
     lastFrameTime=0;
