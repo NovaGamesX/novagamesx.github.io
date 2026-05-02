@@ -186,12 +186,12 @@ const carColors={
   green:{name:['بورش SUV','Porsche SUV'],price:240,color:'#22c55e',glass:'#bbf7d0',type:'suv',tier:4},
   purple:{name:['نيون سبورت','Neon Sport'],price:360,color:'#9333ea',glass:'#e9d5ff',type:'neon',tier:5},
   white:{name:['رولز فاخر','Rolls Luxury'],price:520,color:'#f8fafc',glass:'#1e293b',type:'luxury',tier:6},
-  black:{name:['بوغاتي فانتوم','Bugatti Phantom'],price:720,color:'#0f172a',glass:'#cbd5e1',type:'hyper',tier:7},
+  black:{name:['بوغاتي فانتوم','Bugatti Phantom'],price:720,color:'#334155',glass:'#cbd5e1',type:'hyper',tier:7},
   cyan:{name:['سايبر سوبر','Cyber Super'],price:950,color:'#06b6d4',glass:'#cffafe',type:'cyber',tier:8},
   orange:{name:['لامبو أورانج','Orange Lambo'],price:1150,color:'#f97316',glass:'#111827',type:'race',tier:9},
   silver:{name:['سلفر سوبر','Silver Super'],price:1350,color:'#94a3b8',glass:'#e0f2fe',type:'hyper',tier:10},
   gold:{name:['جولد ليجند','Gold Legend'],price:1600,color:'#eab308',glass:'#1f2937',type:'cyber',tier:11},
-  dark:{name:['دارك نايت','Dark Knight'],price:2000,color:'#020617',glass:'#93c5fd',type:'hyper',tier:12}
+  dark:{name:['دارك نايت','Dark Knight'],price:2000,color:'#475569',glass:'#93c5fd',type:'hyper',tier:12}
 };
 let shopScroll=0,shopTargetScroll=0;
 const themes=[
@@ -360,6 +360,20 @@ function car(x,y,w,h,body,glass='#111827',stripe=true,type='sport'){
     ctx.fillRect(-5,-h/2+8,3,h-17);
     ctx.fillRect(3,-h/2+8,3,h-17);
   }
+
+  // كفرات واضحة لكل السيارات
+  function drawWheel(wx,wy){
+    ctx.fillStyle='rgba(2,6,23,.98)';
+    rr(wx,wy,10,25,4);ctx.fill();
+    ctx.fillStyle='rgba(148,163,184,.65)';
+    rr(wx+2,wy+5,4,14,2);ctx.fill();
+    ctx.fillStyle='rgba(255,255,255,.18)';
+    ctx.fillRect(wx+6,wy+4,2,16);
+  }
+  drawWheel(-w/2-6,-h/2+16);
+  drawWheel(w/2-4,-h/2+16);
+  drawWheel(-w/2-6,h/2-41);
+  drawWheel(w/2-4,h/2-41);
 
   // تفاصيل فخامة بدون لمبات أمامية
 
@@ -582,7 +596,7 @@ function createObstacle(){
   const lanes=[82,173,264];
   let laneIndex=Math.floor(Math.random()*lanes.length);
   let x=lanes[laneIndex];
-  let cols=['#ef4444','#2563eb','#f8fafc','#facc15','#64748b','#16a34a','#0f172a','#9333ea'];
+  let cols=['#ef4444','#2563eb','#f8fafc','#facc15','#64748b','#16a34a','#475569','#9333ea','#f97316','#06b6d4'];
   let typePool=['gt','sport','race','luxury','suv','neon','cyber','hyper','truck','van','tank','bus','pickup'];
   let type=typePool[Math.floor(Math.random()*typePool.length)];
   let w=58,h=88;
