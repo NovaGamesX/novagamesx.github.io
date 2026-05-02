@@ -1226,9 +1226,14 @@ function handleCanvasTap(x,y){
     if(x>100&&x<300&&y>340&&y<390){settingsPage();return}
   }
   if(screen==='contact'){
-    if(x>70&&x<330&&y>335&&y<385){window.location.href='mailto:bilal70051@gmail.com?subject='+encodeURIComponent('تواصل بخصوص لعبة سباق اللانهاية')+'&body='+encodeURIComponent('السلام عليكم،
+    if(x>70&&x<330&&y>335&&y<385){
+      const subject=encodeURIComponent('تواصل بخصوص لعبة سباق اللانهاية');
+      const body=encodeURIComponent('السلام عليكم،
 
-');return}
+');
+      window.location.href='mailto:bilal70051@gmail.com?subject='+subject+'&body='+body;
+      return
+    }
     if(x>90&&x<310&&y>410&&y<458){settingsPage();return}
   }
   if(screen==='instructions'){
