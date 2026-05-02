@@ -180,14 +180,14 @@ let unlockedCars=JSON.parse(localStorage.getItem('unlockedCars')||'["red"]');
 let selectedCar=localStorage.getItem('selectedCar')||'red';
 
 const carColors={
-  red:{name:['الأحمر الرياضي','Sport Red'],price:0,color:'#ef4444',glass:'#111827',type:'sport'},
-  yellow:{name:['الصاعقة الصفراء','Yellow Bolt'],price:40,color:'#facc15',glass:'#1f2937',type:'classic'},
-  blue:{name:['الأزرق السريع','Blue Speed'],price:80,color:'#2563eb',glass:'#bfdbfe',type:'race'},
-  white:{name:['الأبيض الملكي','Royal White'],price:140,color:'#f8fafc',glass:'#1e293b',type:'luxury'},
-  green:{name:['الأخضر الجبلي','Green SUV'],price:220,color:'#22c55e',glass:'#bbf7d0',type:'suv'},
-  purple:{name:['البنفسجي النيون','Neon Purple'],price:320,color:'#9333ea',glass:'#e9d5ff',type:'neon'},
-  black:{name:['الأسود الفخم','Black Phantom'],price:450,color:'#111827',glass:'#cbd5e1',type:'luxury'},
-  cyan:{name:['السماوي الكهربائي','Cyber Cyan'],price:650,color:'#06b6d4',glass:'#cffafe',type:'cyber'}
+  red:{name:['سبورت أحمر','Sport Coupe'],price:0,color:'#ef4444',glass:'#111827',type:'sport',tier:1},
+  yellow:{name:['كلاسيك ذهبي','Golden GT'],price:40,color:'#facc15',glass:'#1f2937',type:'gt',tier:2},
+  blue:{name:['ريسر أزرق','Blue Racer'],price:80,color:'#2563eb',glass:'#bfdbfe',type:'race',tier:3},
+  white:{name:['فاخر أبيض','Luxury White'],price:140,color:'#f8fafc',glass:'#1e293b',type:'luxury',tier:4},
+  green:{name:['SUV رياضي','Sport SUV'],price:220,color:'#22c55e',glass:'#bbf7d0',type:'suv',tier:5},
+  purple:{name:['نيون بنفسجي','Neon Hyper'],price:320,color:'#9333ea',glass:'#e9d5ff',type:'neon',tier:6},
+  black:{name:['فانتوم أسود','Black Phantom'],price:450,color:'#0f172a',glass:'#cbd5e1',type:'hyper',tier:7},
+  cyan:{name:['سايبر سوبر','Cyber Supercar'],price:650,color:'#06b6d4',glass:'#cffafe',type:'cyber',tier:8}
 };
 const themes=[
   {sky:'#25143a',road1:'#25262b',road2:'#101216',side:'#163c2a',name:['المدينة الليلية','Night City']},
@@ -288,116 +288,133 @@ function car(x,y,w,h,body,glass='#111827',stripe=true,type='sport'){
   ctx.save();
   ctx.translate(x+w/2,y+h/2);
 
-  // ظل السيارة
-  ctx.shadowColor='rgba(0,0,0,.7)';
-  ctx.shadowBlur=lowPowerMode?0:18;
-  ctx.shadowOffsetY=lowPowerMode?0:9;
+  // ظل أرضي يعطي إحساس 3D
+  ctx.save();
+  ctx.globalAlpha=.42;
+  ctx.fillStyle='rgba(0,0,0,.75)';
+  ctx.beginPath();
+  ctx.ellipse(0,h/2-6,w*.46,10,0,0,Math.PI*2);
+  ctx.fill();
+  ctx.restore();
 
-  // اختلاف الشكل حسب نوع السيارة
-  let radius=17, topW=w-22, cabinY=-h/2+13, cabinH=24;
-  if(type==='suv'){radius=10;topW=w-14;cabinY=-h/2+10;cabinH=28}
-  if(type==='classic'){radius=20;topW=w-26;cabinY=-h/2+15;cabinH=22}
-  if(type==='race'){radius=24;topW=w-30;cabinY=-h/2+12;cabinH=20}
-  if(type==='luxury'){radius=15;topW=w-18;cabinY=-h/2+12;cabinH=26}
-  if(type==='neon'||type==='cyber'){radius=18;topW=w-20;cabinY=-h/2+12;cabinH=24}
-  if(type==='truck'){radius=9;topW=w-12;cabinY=-h/2+8;cabinH=30}
-  if(type==='van'){radius=11;topW=w-14;cabinY=-h/2+10;cabinH=28}
-  if(type==='tank'){radius=8;topW=w-18;cabinY=-h/2+16;cabinH=20}
-  if(type==='bus'){radius=8;topW=w-10;cabinY=-h/2+10;cabinH=34}
-  if(type==='pickup'){radius=12;topW=w-16;cabinY=-h/2+10;cabinH=26}
+  let radius=18, topW=w-22, cabinY=-h/2+12, cabinH=24, nose=8;
+  if(type==='gt'){radius=20;topW=w-24;cabinY=-h/2+13;cabinH=23;nose=10}
+  if(type==='race'){radius=23;topW=w-30;cabinY=-h/2+10;cabinH=22;nose=13}
+  if(type==='sport'){radius=21;topW=w-26;cabinY=-h/2+11;cabinH=23;nose=12}
+  if(type==='luxury'){radius=16;topW=w-18;cabinY=-h/2+12;cabinH=27;nose=8}
+  if(type==='suv'){radius=12;topW=w-14;cabinY=-h/2+10;cabinH=30;nose=5}
+  if(type==='neon'||type==='cyber'||type==='hyper'){radius=20;topW=w-22;cabinY=-h/2+10;cabinH=24;nose=14}
+  if(type==='truck'){radius=9;topW=w-12;cabinY=-h/2+8;cabinH=30;nose=3}
+  if(type==='van'){radius=11;topW=w-14;cabinY=-h/2+10;cabinH=28;nose=4}
+  if(type==='tank'){radius=8;topW=w-18;cabinY=-h/2+16;cabinH=20;nose=2}
+  if(type==='bus'){radius=8;topW=w-10;cabinY=-h/2+10;cabinH=34;nose=2}
+  if(type==='pickup'){radius=12;topW=w-16;cabinY=-h/2+10;cabinH=26;nose=5}
 
-  // جسم السيارة الأساسي
-  let gr=ctx.createLinearGradient(-w/2,0,w/2,0);
-  gr.addColorStop(0,body);
-  gr.addColorStop(.45,'rgba(255,255,255,.22)');
-  gr.addColorStop(1,body);
-  ctx.fillStyle=gr;
-  rr(-w/2,-h/2,w,h,radius);ctx.fill();
-  ctx.shadowBlur=0;
+  // جسم السيارة بتدرج 3D
+  let bodyGrad=ctx.createLinearGradient(-w/2,-h/2,w/2,h/2);
+  bodyGrad.addColorStop(0,'rgba(255,255,255,.50)');
+  bodyGrad.addColorStop(.18,body);
+  bodyGrad.addColorStop(.68,body);
+  bodyGrad.addColorStop(1,'rgba(2,6,23,.92)');
+  ctx.shadowColor='rgba(0,0,0,.58)';
+  ctx.shadowBlur=lowPowerMode?0:16;
+  ctx.shadowOffsetY=lowPowerMode?0:7;
+  ctx.fillStyle=bodyGrad;
+  rr(-w/2,-h/2+2,w,h-4,radius);ctx.fill();
+  ctx.shadowBlur=0;ctx.shadowOffsetY=0;
 
-  // لمعة جانبية
-  ctx.fillStyle='rgba(255,255,255,.12)';
-  rr(-w/2+6,-h/2+6,w-12,h-12,Math.max(8,radius-4));ctx.fill();
+  // مقدمة رياضية مختلفة
+  if(['sport','race','gt','neon','cyber','hyper'].includes(type)){
+    ctx.fillStyle='rgba(255,255,255,.16)';
+    ctx.beginPath();
+    ctx.moveTo(-w/2+10,-h/2+8);
+    ctx.lineTo(0,-h/2-nose);
+    ctx.lineTo(w/2-10,-h/2+8);
+    ctx.lineTo(w/2-8,-h/2+26);
+    ctx.lineTo(-w/2+8,-h/2+26);
+    ctx.closePath();
+    ctx.fill();
+  }
 
-  // زجاج السيارة
-  ctx.fillStyle=glass;
+  // لمعات علوية وجانبية
+  ctx.fillStyle='rgba(255,255,255,.18)';
+  rr(-w/2+6,-h/2+7,w-12,11,7);ctx.fill();
+  ctx.fillStyle='rgba(0,0,0,.22)';
+  rr(-w/2+7,h/2-24,w-14,18,8);ctx.fill();
+
+  // الزجاج
+  let glassGrad=ctx.createLinearGradient(0,cabinY,0,cabinY+cabinH);
+  glassGrad.addColorStop(0,'rgba(255,255,255,.60)');
+  glassGrad.addColorStop(.28,glass);
+  glassGrad.addColorStop(1,'rgba(2,6,23,.85)');
+  ctx.fillStyle=glassGrad;
   rr(-topW/2,cabinY,topW,cabinH,8);ctx.fill();
-  ctx.fillStyle='rgba(0,0,0,.35)';
-  rr(-w/2+12,-h/2+46,w-24,27,9);ctx.fill();
+  ctx.fillStyle='rgba(255,255,255,.18)';
+  rr(-topW/2+5,cabinY+4,topW-10,5,3);ctx.fill();
 
-  // تفاصيل حسب النوع
-  if(type==='sport'||type==='race'){
-    ctx.fillStyle='rgba(255,255,255,.9)';
-    ctx.fillRect(-7,-h/2+6,5,h-12);
-    ctx.fillRect(3,-h/2+6,5,h-12);
-  }
-  if(type==='classic'){
-    ctx.fillStyle='rgba(255,255,255,.7)';
-    ctx.fillRect(-w/2+9,0,w-18,4);
-  }
-  if(type==='suv'){
-    ctx.fillStyle='rgba(0,0,0,.35)';
-    ctx.fillRect(-w/2+6,-h/2+36,w-12,5);
-  }
-  if(type==='neon'||type==='cyber'){
-    ctx.shadowColor=body;
-    ctx.shadowBlur=lowPowerMode?0:18;
-    ctx.strokeStyle='rgba(255,255,255,.8)';
-    ctx.lineWidth=2;
-    rr(-w/2+5,-h/2+5,w-10,h-10,14);ctx.stroke();
-    ctx.shadowBlur=0;
+  // تفاصيل فخامة حسب النوع
+  if(type==='sport'||type==='race'||type==='gt'){
+    ctx.fillStyle='rgba(255,255,255,.90)';
+    ctx.fillRect(-7,-h/2+9,4,h-18);
+    ctx.fillRect(4,-h/2+9,4,h-18);
+    ctx.fillStyle='rgba(0,0,0,.20)';
+    rr(-w/2+12,h/2-39,w-24,18,8);ctx.fill();
   }
   if(type==='luxury'){
-    ctx.fillStyle='rgba(255,255,255,.75)';
-    rr(-w/2+16,-h/2+6,w-32,5,3);ctx.fill();
+    ctx.fillStyle='rgba(255,255,255,.78)';
+    rr(-w/2+15,-h/2+7,w-30,5,3);ctx.fill();
+    ctx.fillStyle='rgba(250,204,21,.24)';
+    rr(-w/2+12,h/2-35,w-24,18,9);ctx.fill();
+  }
+  if(type==='suv'){
+    ctx.fillStyle='rgba(0,0,0,.32)';
+    ctx.fillRect(-w/2+7,-h/2+38,w-14,6);
+    ctx.fillStyle='rgba(255,255,255,.18)';
+    rr(-w/2+11,h/2-36,w-22,22,8);ctx.fill();
+  }
+  if(type==='neon'||type==='cyber'||type==='hyper'){
+    ctx.save();
+    ctx.shadowColor=body;ctx.shadowBlur=lowPowerMode?0:23;
+    ctx.strokeStyle='rgba(255,255,255,.85)';ctx.lineWidth=2;
+    rr(-w/2+5,-h/2+5,w-10,h-10,15);ctx.stroke();
+    ctx.strokeStyle=body;ctx.lineWidth=3;
+    ctx.beginPath();ctx.moveTo(-w/2+10,h/2-18);ctx.lineTo(w/2-10,h/2-18);ctx.stroke();
+    ctx.restore();
   }
   if(type==='truck'){
-    ctx.fillStyle='rgba(0,0,0,.28)';
-    rr(-w/2+8,-h/2+42,w-16,h/2-2,8);ctx.fill();
-    ctx.fillStyle='rgba(255,255,255,.55)';
-    ctx.fillRect(-w/2+10,-h/2+39,w-20,3);
+    ctx.fillStyle='rgba(0,0,0,.28)';rr(-w/2+8,-h/2+42,w-16,h/2-2,8);ctx.fill();
+    ctx.fillStyle='rgba(255,255,255,.50)';ctx.fillRect(-w/2+10,-h/2+39,w-20,3);
   }
   if(type==='van'){
-    ctx.fillStyle='rgba(255,255,255,.28)';
-    rr(-w/2+10,-h/2+43,w-20,20,7);ctx.fill();
+    ctx.fillStyle='rgba(255,255,255,.25)';rr(-w/2+10,-h/2+43,w-20,20,7);ctx.fill();
   }
   if(type==='tank'){
-    ctx.fillStyle='rgba(15,23,42,.7)';
-    rr(-w/2+8,-h/2+35,w-16,36,8);ctx.fill();
-    ctx.fillStyle='rgba(0,0,0,.55)';
-    ctx.fillRect(-5,-h/2+18,10,50);
-    ctx.fillStyle='rgba(255,255,255,.45)';
-    ctx.fillRect(-w/2+12,-h/2+8,w-24,4);
+    ctx.fillStyle='rgba(15,23,42,.72)';rr(-w/2+8,-h/2+35,w-16,36,8);ctx.fill();
+    ctx.fillStyle='rgba(0,0,0,.55)';ctx.fillRect(-5,-h/2+18,10,50);
+    ctx.fillStyle='rgba(255,255,255,.42)';ctx.fillRect(-w/2+12,-h/2+8,w-24,4);
   }
   if(type==='bus'){
-    ctx.fillStyle='rgba(255,255,255,.28)';
-    for(let yy=-h/2+46;yy<h/2-20;yy+=18){
-      rr(-w/2+10,yy,w-20,10,4);ctx.fill();
-    }
-    ctx.fillStyle='rgba(0,0,0,.28)';
-    rr(-w/2+8,h/2-28,w-16,18,6);ctx.fill();
+    ctx.fillStyle='rgba(255,255,255,.24)';
+    for(let yy=-h/2+46;yy<h/2-20;yy+=18){rr(-w/2+10,yy,w-20,10,4);ctx.fill();}
+    ctx.fillStyle='rgba(0,0,0,.26)';rr(-w/2+8,h/2-28,w-16,18,6);ctx.fill();
   }
   if(type==='pickup'){
-    ctx.fillStyle='rgba(0,0,0,.34)';
-    rr(-w/2+9,-h/2+45,w-18,30,7);ctx.fill();
-    ctx.fillStyle='rgba(255,255,255,.22)';
-    ctx.fillRect(-w/2+13,-h/2+48,w-26,4);
+    ctx.fillStyle='rgba(0,0,0,.34)';rr(-w/2+9,-h/2+45,w-18,30,7);ctx.fill();
+    ctx.fillStyle='rgba(255,255,255,.22)';ctx.fillRect(-w/2+13,-h/2+48,w-26,4);
   }
 
-  // الإطارات
+  // إطارات 3D
   ctx.fillStyle='#020617';
-  ctx.fillRect(-w/2-5,-h/2+16,7,22);
-  ctx.fillRect(w/2-2,-h/2+16,7,22);
-  ctx.fillRect(-w/2-5,h/2-39,7,22);
-  ctx.fillRect(w/2-2,h/2-39,7,22);
+  [[-w/2-5,-h/2+16],[w/2-2,-h/2+16],[-w/2-5,h/2-39],[w/2-2,h/2-39]].forEach(a=>{rr(a[0],a[1],8,23,3);ctx.fill();});
+  ctx.fillStyle='rgba(148,163,184,.35)';
+  ctx.fillRect(-w/2-3,-h/2+20,3,12);ctx.fillRect(w/2+1,-h/2+20,3,12);
+  ctx.fillRect(-w/2-3,h/2-35,3,12);ctx.fillRect(w/2+1,h/2-35,3,12);
 
-  // الأنوار
+  // أنوار
   ctx.fillStyle='#fde68a';
-  ctx.fillRect(-w/2+8,-h/2+4,12,5);
-  ctx.fillRect(w/2-20,-h/2+4,12,5);
-  ctx.fillStyle='rgba(239,68,68,.9)';
-  ctx.fillRect(-w/2+9,h/2-9,12,4);
-  ctx.fillRect(w/2-21,h/2-9,12,4);
+  ctx.fillRect(-w/2+8,-h/2+4,12,5);ctx.fillRect(w/2-20,-h/2+4,12,5);
+  ctx.fillStyle='rgba(239,68,68,.92)';
+  ctx.fillRect(-w/2+9,h/2-9,12,4);ctx.fillRect(w/2-21,h/2-9,12,4);
 
   ctx.restore();
 }
@@ -587,7 +604,7 @@ function createObstacle(){
   let laneIndex=Math.floor(Math.random()*lanes.length);
   let x=lanes[laneIndex];
   let cols=['#ef4444','#2563eb','#f8fafc','#facc15','#64748b','#16a34a','#0f172a','#9333ea'];
-  let typePool=['classic','suv','race','sport','truck','van','tank','bus','pickup'];
+  let typePool=['gt','sport','race','luxury','suv','neon','cyber','hyper','truck','van','tank','bus','pickup'];
   let type=typePool[Math.floor(Math.random()*typePool.length)];
   let w=58,h=88;
   if(type==='truck'){w=64;h=108;x-=3}
@@ -610,7 +627,7 @@ function updateItems(){
   powerTimer+=deltaScale;
 
   // مسافة أوسع بين السيارات عشان اللعب يكون أعدل وأسهل
-  if(obstacleTimer>Math.max(46,82-level*2.2)){
+  if(obstacleTimer>Math.max(44,74-level*2.1)){
     createObstacle();
     obstacleTimer=0;
   }
