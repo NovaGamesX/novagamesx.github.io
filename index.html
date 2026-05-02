@@ -412,26 +412,34 @@ function home(){
   logo();
 
   ctx.textAlign='center';
-  // شريط الإحصائيات في الصفحة الرئيسية - بنفس أسلوب الهيدر
-ctx.fillStyle='rgba(2,6,23,.68)';
-rr(48,235,304,52,16);ctx.fill();
-ctx.strokeStyle='rgba(255,255,255,.16)';ctx.lineWidth=1.5;rr(48,235,304,52,16);ctx.stroke();
+  // شريط الإحصائيات في الصفحة الرئيسية - فخم ومرتب في الوسط
+ctx.save();
+ctx.fillStyle='rgba(2,6,23,.72)';
+rr(42,235,316,54,18);ctx.fill();
+ctx.strokeStyle='rgba(255,255,255,.20)';ctx.lineWidth=1.6;rr(42,235,316,54,18);ctx.stroke();
+ctx.fillStyle='rgba(255,255,255,.07)';
+rr(50,241,300,14,10);ctx.fill();
 
+// الترتيب من اليمين: أعلى نقطة، قلب، عملات، ماس
 const statBoxes=[
-  {x:62,w:62,text:'🏆 '+bestScore},
-  {x:129,w:54,text:'❤️ 3'},
-  {x:188,w:67,text:'🪙 '+coins},
-  {x:260,w:58,text:'💎 '+unlockedCars.length}
+  {x:252,w:78,text:'🏆 '+bestScore},
+  {x:194,w:50,text:'❤️ 3'},
+  {x:118,w:68,text:'🪙 '+coins},
+  {x:70,w:40,text:'💎 '+unlockedCars.length}
 ];
 statBoxes.forEach(s=>{
-  ctx.fillStyle='rgba(15,23,42,.72)';
-  rr(s.x,245,s.w,32,10);ctx.fill();
-  ctx.strokeStyle='rgba(148,163,184,.22)';ctx.lineWidth=1;rr(s.x,245,s.w,32,10);ctx.stroke();
+  let sg=ctx.createLinearGradient(0,246,0,278);
+  sg.addColorStop(0,'rgba(30,41,59,.92)');
+  sg.addColorStop(1,'rgba(15,23,42,.82)');
+  ctx.fillStyle=sg;
+  rr(s.x,246,s.w,32,11);ctx.fill();
+  ctx.strokeStyle='rgba(148,163,184,.28)';ctx.lineWidth=1;rr(s.x,246,s.w,32,11);ctx.stroke();
   ctx.fillStyle='white';
-  ctx.font='bold 13px Arial';
+  ctx.font='900 13px Arial';
   ctx.textAlign='center';
-  ctx.fillText(s.text,s.x+s.w/2,266);
+  ctx.fillText(s.text,s.x+s.w/2,267);
 });
+ctx.restore();
 
   // زر ابدأ فقط: حركة + إضاءة
   bigButton(70,300,260,62,t('ابدأ اللعب','Start Game'),'▶','#22c55e','#15803d','start');
@@ -809,9 +817,9 @@ function drawEndScreen(){
   ctx.fillStyle='#fde047';
   ctx.fillText('🪙 '+coins,200,348);
 
-  bigButton(70,388,260,46,t('إعادة اللعب','Replay'),'↻','#22c55e','#15803d');
-  bigButton(70,443,260,46,t('الصفحة الرئيسية','Home'),'🏠','#2563eb','#1e40af');
-  bigButton(70,498,260,46,t('مشاركة النتيجة','Share Score'),'📤','#0ea5e9','#0369a1');
+  bigButton(70,388,260,46,t('إعادة اللعب','Replay'),'↻','#22c55e','#15803d','start');
+  bigButton(70,443,260,46,t('الصفحة الرئيسية','Home'),'🏠','#2563eb','#1e40af','move');
+  bigButton(70,498,260,46,t('مشاركة النتيجة','Share Score'),'🔗','#0ea5e9','#0369a1','move');
 
   ctx.fillStyle='rgba(15,23,42,.82)';rr(70,565,260,40,12);ctx.fill();
   ctx.setLineDash([6,5]);
@@ -999,7 +1007,7 @@ function handleCanvasTap(x,y){
     if(x>90&&x<310&&y>575&&y<617){showHome();return}
   }
   if(screen==='end'){
-    if(x>70&&x<330&&y>388&&y<434){startGame();return}
+    if(x>70&&x<330&&y>388&&y<434){beep('power');softVibrate(35);startGame();return}
     if(x>70&&x<330&&y>443&&y<489){showHome();return}
     if(x>70&&x<330&&y>498&&y<544){shareGame();return}
   }
