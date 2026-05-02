@@ -95,6 +95,7 @@ let bestRewardAvailable=false,bestRewardClaimed=false,giftAnimationId=null,giftT
 let pendingGiftLives=0,pendingGiftMagnet=0,pendingGiftShield=0;
 let animationId=null;
 let audioCtx=null;
+let audioUnlocked=false;
 
 function initAudio(){
   try{
@@ -103,6 +104,28 @@ function initAudio(){
     if(audioCtx.state==='suspended')audioCtx.resume().catch(()=>{});
   }catch(e){}
 }
+
+function unlockAudio(){
+  try{
+    initAudio();
+    if(!audioCtx || audioUnlocked)return;
+
+    const buffer=audioCtx.createBuffer(1,1,22050);
+    const source=audioCtx.createBufferSource();
+    const gain=audioCtx.createGain();
+    gain.gain.value=0.001;
+    source.buffer=buffer;
+    source.connect(gain);
+    gain.connect(audioCtx.destination);
+    source.start(0);
+
+    audioUnlocked=true;
+  }catch(e){}
+}
+
+['pointerdown','touchstart','click'].forEach(ev=>{
+  document.addEventListener(ev,unlockAudio,{once:false,passive:true});
+});
 let unlockedCars=JSON.parse(localStorage.getItem('unlockedCars')||'["red"]');
 let selectedCar=localStorage.getItem('selectedCar')||'red';
 
@@ -134,6 +157,7 @@ function applyLang(){document.title=t('سباق اللانهاية','Infinity Ra
 function beep(type){
   if(muted)return;
   try{
+    unlockAudio();
     initAudio();
     if(!audioCtx)return;
 
@@ -351,7 +375,7 @@ function requestGameFullscreen(){
   const el=document.documentElement;
   if(!document.fullscreenElement&&el.requestFullscreen){el.requestFullscreen().catch(()=>{});}
 }
-function startGame(){initAudio();requestGameFullscreen();screen='game';gameRunning=true;paused=false;rewardUsedThisRound=false;score=0;runCoins=0;lives=3+pendingGiftLives;level=1;obstacleSpeed=3;obstacleTimer=0;coinTimer=0;powerTimer=0;obstacles=[];coinItems=[];powers=[];invincibleTimer=0;magnetTimer=pendingGiftMagnet;shield=pendingGiftShield;pendingGiftLives=0;pendingGiftMagnet=0;pendingGiftShield=0;player.x=172;leftBtn.style.display=controlType==='buttons'?'flex':'none';rightBtn.style.display=controlType==='buttons'?'flex':'none';startBtn.style.display='none';rewardBtn.style.display='none';pauseTop.textContent='⏸';pauseTop.style.background='';adBox.textContent=t('مكان الإعلان لاحقًا','Ad space later');cancelAnimationFrame(animationId);ui();gameLoop()}
+function startGame(){unlockAudio();initAudio();requestGameFullscreen();screen='game';gameRunning=true;paused=false;rewardUsedThisRound=false;score=0;runCoins=0;lives=3+pendingGiftLives;level=1;obstacleSpeed=3;obstacleTimer=0;coinTimer=0;powerTimer=0;obstacles=[];coinItems=[];powers=[];invincibleTimer=0;magnetTimer=pendingGiftMagnet;shield=pendingGiftShield;pendingGiftLives=0;pendingGiftMagnet=0;pendingGiftShield=0;player.x=172;leftBtn.style.display=controlType==='buttons'?'flex':'none';rightBtn.style.display=controlType==='buttons'?'flex':'none';startBtn.style.display='none';rewardBtn.style.display='none';pauseTop.textContent='⏸';pauseTop.style.background='';adBox.textContent=t('مكان الإعلان لاحقًا','Ad space later');cancelAnimationFrame(animationId);ui();gameLoop()}
 function endGame(){screen='end';gameRunning=false;paused=false;leftBtn.style.display='none';rightBtn.style.display='none';cancelAnimationFrame(animationId);startBtn.style.display='none';rewardBtn.style.display='block';pauseTop.textContent='↻';pauseTop.style.background='linear-gradient(180deg,#22c55e,#15803d)';if(score>bestScore){bestScore=score;bestRewardAvailable=true;bestRewardClaimed=false;localStorage.setItem('bestScore',bestScore);saveData();ui();showGiftBox();return}bestRewardAvailable=false;bestRewardClaimed=false;saveData();ui();drawEndScreen()}
 function drawEndScreen(){screen='end';if(giftAnimationId){cancelAnimationFrame(giftAnimationId);giftAnimationId=null}if(giftTimeoutId){clearTimeout(giftTimeoutId);giftTimeoutId=null}adBox.innerHTML='<b>📢 إعلان</b><br>'+t('مساحة إعلان بعد الخسارة','Ad after game over');bg();ctx.fillStyle='rgba(0,0,0,.55)';ctx.fillRect(0,0,GAME_W,GAME_H);ctx.fillStyle='rgba(239,68,68,.22)';ctx.fillRect(0,0,GAME_W,GAME_H);ctx.fillStyle='#020617';rr(45,115,310,470,24);ctx.fill();ctx.strokeStyle='rgba(255,255,255,.28)';ctx.lineWidth=2;rr(45,115,310,470,24);ctx.stroke();ctx.textAlign='center';ctx.fillStyle='#ef4444';ctx.font='900 34px Arial';ctx.fillText(t('انتهت اللعبة','Game Over'),200,175);ctx.font='42px Arial';ctx.fillText('💔',200,225);ctx.fillStyle='white';ctx.font='bold 18px Arial';ctx.fillText(t('النقاط','Score'),200,262);ctx.fillStyle='#facc15';ctx.font='900 40px Arial';ctx.fillText(score,200,305);ctx.fillStyle='white';ctx.font='bold 19px Arial';ctx.fillText(t('أفضل نتيجة: ','Best: ')+bestScore,200,348);ctx.fillStyle='#fde047';ctx.fillText('🪙 '+coins,200,388);bigButton(70,410,260,52,t('إعادة اللعب','Replay'),'↻','#22c55e','#15803d');bigButton(70,470,260,52,t('الصفحة الرئيسية','Home'),'🏠','#2563eb','#1e40af');bigButton(70,530,260,52,t('مشاركة النتيجة','Share Score'),'📤','#0ea5e9','#0369a1');ctx.textAlign='start'}
 function showGiftBox(){screen='gift';let start=Date.now();function drawGift(){let time=(Date.now()-start)/1000;bg();ctx.fillStyle='rgba(0,0,0,.58)';ctx.fillRect(0,0,GAME_W,GAME_H);panel(45,150,310,350,24);ctx.textAlign='center';ctx.fillStyle='#facc15';ctx.font='900 27px Tahoma';ctx.fillText(t('رقم قياسي جديد!','New Best Score!'),200,210);ctx.fillStyle='#cbd5e1';ctx.font='16px Arial';ctx.fillText(t('اضغط الصندوق لفتح الهدية','Tap the box to open'),200,245);ctx.fillText(t('أو سيتم فتحه تلقائيًا خلال 3 ثواني','Auto opens in 3 seconds'),200,272);let bounce=Math.sin(time*8)*10;ctx.save();ctx.translate(200,360+bounce);ctx.shadowColor='rgba(250,204,21,1)';ctx.shadowBlur=28;ctx.font='86px Arial';ctx.fillText('🎁',0,28);ctx.restore();let left=Math.max(0,3-Math.floor(time));ctx.fillStyle='white';ctx.font='bold 22px Arial';ctx.fillText(left,200,455);ctx.textAlign='start';giftAnimationId=requestAnimationFrame(drawGift)}drawGift();giftTimeoutId=setTimeout(()=>openBestReward(),3000)}
@@ -373,7 +397,7 @@ function playGiftExplosion(rewardIcon,message){let start=Date.now();const partic
 function confirmResetPage(){screen='confirmReset';gameRunning=false;paused=false;cancelAnimationFrame(animationId);setMenu();bg();ctx.fillStyle='rgba(0,0,0,.6)';ctx.fillRect(0,0,GAME_W,GAME_H);panel(38,145,324,360,24);ctx.textAlign='center';ctx.fillStyle='white';ctx.font='900 26px Tahoma';ctx.fillText(t('تأكيد إعادة الضبط','Confirm Reset'),200,200);ctx.font='16px Arial';ctx.fillStyle='#cbd5e1';ctx.fillText(t('هل أنت متأكد؟','Are you sure?'),200,250);ctx.fillText(t('سيتم حذف العملات والسيارات وأفضل نتيجة','Coins, cars and best score will be deleted'),200,282);bigButton(70,330,260,50,t('نعم، امسح','Yes, Reset'),'✅','#ef4444','#991b1b');bigButton(90,405,220,50,t('لا، رجوع','No, Back'),'↩','#2563eb','#1e40af');ctx.textAlign='start'}
 function factoryReset(){localStorage.removeItem('coins');localStorage.removeItem('bestScore');localStorage.removeItem('unlockedCars');localStorage.removeItem('selectedCar');localStorage.removeItem('controlType');localStorage.removeItem('vibration');coins=0;bestScore=0;unlockedCars=['red'];selectedCar='red';controlType='buttons';vibration=false;settingsScroll=0;ui();adBox.textContent=t('تم ضبط اللعبة من جديد','Game reset successfully');settingsPage()}
 function rewardLife(){if(screen==='game'&&gameRunning){adBox.textContent=t('المكافأة تظهر بعد الخسارة فقط','Reward appears after game over');return}if(rewardUsedThisRound){adBox.textContent=t('استخدمت المكافأة هذه الجولة','Reward already used');return}rewardUsedThisRound=true;lives=Math.max(lives,1)+1;ui();adBox.textContent=t('تمت إضافة قلب إضافي ❤️','Extra life added ❤️');beep('power')}
-function toggleMute(){muted=!muted;muteTop.textContent=muted?'🔇':'🔊'}
+function toggleMute(){unlockAudio();muted=!muted;muteTop.textContent=muted?'🔇':'🔊';if(!muted)beep('power')}
 startBtn.addEventListener('click',startGame);shopBtn.addEventListener('click',shop);homeBtn.addEventListener('click',showHome);rewardBtn.addEventListener('click',rewardLife);muteTop.addEventListener('click',toggleMute);pauseTop.addEventListener('click',()=>{if(screen==='game')togglePause();else if(screen==='end')startGame()});
 canvas.addEventListener('click',e=>{initAudio();const r=canvas.getBoundingClientRect(),x=(e.clientX-r.left)*(GAME_W/r.width),y=(e.clientY-r.top)*(GAME_H/r.height);
 if(screen==='pause'){
