@@ -264,6 +264,9 @@ function car(x,y,w,h,body,glass='#111827',stripe=true,type='sport'){
   if(type==='race'){radius=24;topW=w-30;cabinY=-h/2+12;cabinH=20}
   if(type==='luxury'){radius=15;topW=w-18;cabinY=-h/2+12;cabinH=26}
   if(type==='neon'||type==='cyber'){radius=18;topW=w-20;cabinY=-h/2+12;cabinH=24}
+  if(type==='truck'){radius=9;topW=w-12;cabinY=-h/2+8;cabinH=30}
+  if(type==='van'){radius=11;topW=w-14;cabinY=-h/2+10;cabinH=28}
+  if(type==='tank'){radius=8;topW=w-18;cabinY=-h/2+16;cabinH=20}
 
   // جسم السيارة الأساسي
   let gr=ctx.createLinearGradient(-w/2,0,w/2,0);
@@ -309,6 +312,24 @@ function car(x,y,w,h,body,glass='#111827',stripe=true,type='sport'){
   if(type==='luxury'){
     ctx.fillStyle='rgba(255,255,255,.75)';
     rr(-w/2+16,-h/2+6,w-32,5,3);ctx.fill();
+  }
+  if(type==='truck'){
+    ctx.fillStyle='rgba(0,0,0,.28)';
+    rr(-w/2+8,-h/2+42,w-16,h/2-2,8);ctx.fill();
+    ctx.fillStyle='rgba(255,255,255,.55)';
+    ctx.fillRect(-w/2+10,-h/2+39,w-20,3);
+  }
+  if(type==='van'){
+    ctx.fillStyle='rgba(255,255,255,.28)';
+    rr(-w/2+10,-h/2+43,w-20,20,7);ctx.fill();
+  }
+  if(type==='tank'){
+    ctx.fillStyle='rgba(15,23,42,.7)';
+    rr(-w/2+8,-h/2+35,w-16,36,8);ctx.fill();
+    ctx.fillStyle='rgba(0,0,0,.55)';
+    ctx.fillRect(-5,-h/2+18,10,50);
+    ctx.fillStyle='rgba(255,255,255,.45)';
+    ctx.fillRect(-w/2+12,-h/2+8,w-24,4);
   }
 
   // الإطارات
@@ -391,11 +412,14 @@ function home(){
   logo();
 
   ctx.textAlign='center';
-  ctx.fillStyle='rgba(15,23,42,.82)';
-  rr(72,238,256,44,14);ctx.fill();
-  ctx.fillStyle='white';
-  ctx.font='bold 17px Arial';
-  ctx.fillText('❤️ 3      🪙 '+coins+'      💎 '+unlockedCars.length+'      🏆 '+bestScore,200,266);
+  // شريط الإحصائيات في الصفحة الرئيسية
+ctx.fillStyle='rgba(2,6,23,.58)';
+rr(48,235,304,48,16);ctx.fill();
+ctx.strokeStyle='rgba(255,255,255,.12)';ctx.lineWidth=1.5;rr(48,235,304,48,16);ctx.stroke();
+ctx.fillStyle='white';
+ctx.font='bold 14px Arial';
+ctx.textAlign='center';
+ctx.fillText('🏆 '+bestScore+'   ❤️ 3   🪙 '+coins+'   💎 '+unlockedCars.length,200,265);
 
   // زر ابدأ فقط: حركة + إضاءة
   bigButton(70,300,260,62,t('ابدأ اللعب','Start Game'),'▶','#22c55e','#15803d','start');
@@ -491,7 +515,18 @@ async function shareGameLink(){
   }catch(e){}
 }
 async function shareGame(){const text=t('🔥 لعبت سباق اللانهاية وجبت '+score+' نقطة!','🔥 I scored '+score+' in Infinity Race!');const url=window.location.href;try{canvas.toBlob(async(blob)=>{try{if(blob&&navigator.share&&window.File&&navigator.canShare){const file=new File([blob],'infinity-race-score.png',{type:'image/png'});if(navigator.canShare({files:[file]})){await navigator.share({title:t('نتيجتي في اللعبة','My Game Score'),text:text,url:url,files:[file]});return}}if(navigator.share){await navigator.share({title:t('سباق اللانهاية','Infinity Race'),text:text,url:url});return}if(navigator.clipboard){await navigator.clipboard.writeText(text+' '+url);adBox.textContent=t('تم نسخ رابط اللعبة 📋','Game link copied 📋')}}catch(e){adBox.textContent=t('تعذر المشاركة','Share failed')}} ,'image/png')}catch(e){adBox.textContent=t('تعذر المشاركة','Share failed')}}
-function createObstacle(){let lanes=[82,173,264],x=lanes[Math.floor(Math.random()*lanes.length)],cols=['#ef4444','#2563eb','#f8fafc','#facc15'];obstacles.push({x,y:-100,width:58,height:88,color:cols[Math.floor(Math.random()*cols.length)],glass:'#111827',type:['classic','suv','race','sport'][Math.floor(Math.random()*4)],moving:Math.random()<0.38,dir:Math.random()<.5?-1:1,wobble:Math.random()*100})}
+function createObstacle(){
+  let lanes=[82,173,264];
+  let x=lanes[Math.floor(Math.random()*lanes.length)];
+  let cols=['#ef4444','#2563eb','#f8fafc','#facc15','#64748b','#16a34a'];
+  let typePool=['classic','suv','race','sport','truck','van','tank'];
+  let type=typePool[Math.floor(Math.random()*typePool.length)];
+  let w=58,h=88;
+  if(type==='truck'){w=64;h=104;x-=3}
+  if(type==='van'){w=62;h=96;x-=2}
+  if(type==='tank'){w=66;h=90;x-=4}
+  obstacles.push({x,y:-120,width:w,height:h,color:cols[Math.floor(Math.random()*cols.length)],glass:'#111827',type,moving:Math.random()<0.35,dir:Math.random()<.5?-1:1,wobble:Math.random()*100})
+}
 function createCoin(){let lanes=[92,183,274],x=lanes[Math.floor(Math.random()*lanes.length)];coinItems.push({x,y:-35,r:15,pulse:Math.random()*6})}
 function createPower(){let lanes=[92,183,274],x=lanes[Math.floor(Math.random()*lanes.length)],type=Math.random()<.5?'magnet':'shield';powers.push({x,y:-45,r:19,type,pulse:0})}
 function updateItems(){obstacleTimer+=deltaScale;coinTimer+=deltaScale;powerTimer+=deltaScale;if(obstacleTimer>Math.max(23,58-level*3)){createObstacle();obstacleTimer=0}if(coinTimer>68){createCoin();coinTimer=0}if(powerTimer>500){createPower();powerTimer=0}obstacles.forEach(o=>{o.y+=obstacleSpeed*deltaScale;o.wobble+=.04;if(level>1&&o.moving){o.x+=Math.sin(o.wobble)*0.65+o.dir*0.22*Math.min(level,5);if(o.x<62||o.x>282)o.dir*=-1}});coinItems.forEach(c=>{if(magnetTimer>0){let dx=(player.x+player.width/2)-c.x,dy=(player.y+player.height/2)-c.y,d=Math.max(1,Math.sqrt(dx*dx+dy*dy));if(d<185){c.x+=dx/d*6*deltaScale;c.y+=dy/d*6*deltaScale}}c.y+=obstacleSpeed*deltaScale;c.pulse+=.16});powers.forEach(p=>{p.y+=obstacleSpeed*deltaScale;p.pulse+=.13});obstacles=obstacles.filter(o=>o.y<GAME_H+100);coinItems=coinItems.filter(c=>c.y<GAME_H+50);powers=powers.filter(p=>p.y<GAME_H+50)}
@@ -731,8 +766,7 @@ function drawEndScreen(){
   bg();
   ctx.fillStyle='rgba(0,0,0,.55)';
   ctx.fillRect(0,0,GAME_W,GAME_H);
-  ctx.fillStyle='rgba(239,68,68,.22)';
-  ctx.fillRect(0,0,GAME_W,GAME_H);
+  
 
   ctx.fillStyle='#020617';
   rr(45,90,310,535,24);ctx.fill();
