@@ -95,7 +95,7 @@ let vibration=localStorage.getItem('vibration')==='true';
 let screen='home',gameRunning=false,paused=false,muted=false;
 let score=0,runCoins=0,coins=Number(localStorage.getItem('coins'))||0,bestScore=Number(localStorage.getItem('bestScore'))||0;
 let lives=3,level=1,obstacleSpeed=3,obstacleTimer=0,coinTimer=0,powerTimer=0,roadLineOffset=0,cityOffset=0;
-let invincibleTimer=0,magnetTimer=0,shield=0,rewardUsedThisRound=false,shakeTimer=0,crashFlash=0,settingsScroll=0;
+let invincibleTimer=0,magnetTimer=0,shield=0,rewardUsedThisRound=false,shakeTimer=0,crashFlash=0,settingsScroll=0,settingsTargetScroll=0;
 let bestRewardAvailable=false,bestRewardClaimed=false,giftAnimationId=null,giftTimeoutId=null;
 let pendingGiftLives=0,pendingGiftMagnet=0,pendingGiftShield=0;
 let animationId=null;
@@ -160,6 +160,8 @@ function tr(a){return lang==='ar'?a[0]:a[1]}
 function saveData(){localStorage.setItem('coins',coins);localStorage.setItem('unlockedCars',JSON.stringify(unlockedCars));localStorage.setItem('selectedCar',selectedCar)}
 function ui(){coinsText.textContent=screen==='game'?runCoins:coins;livesText.textContent=lives;magnetText.textContent=Math.ceil(magnetTimer/60)}
 function applyLang(){document.title=t('سباق اللانهاية','Infinity Race');startBtn.textContent=t('ابدأ اللعب','Start');shopBtn.textContent=t('🛒 المتجر','🛒 Shop');rewardBtn.textContent=t('🎁 مكافأة','🎁 Reward');homeBtn.textContent=t('🏠 الرئيسية','🏠 Home')}
+function softVibrate(ms=25){try{if(navigator.vibrate)navigator.vibrate(ms)}catch(e){}}
+function settingFeedback(){softVibrate(25);beep('power')}
 function beep(type){
   if(muted)return;
   try{
@@ -273,22 +275,91 @@ function car(x,y,w,h,body,glass='#111827',stripe=true,type='sport'){
 
   ctx.restore();
 }
-function bigButton(x,y,w,h,text,icon,c1,c2,glow=false){ctx.save();if(glow){let pulse=(Math.sin(Date.now()/260)+1)/2;y+=Math.sin(Date.now()/420)*2;ctx.shadowColor='rgba(34,197,94,.95)';ctx.shadowBlur=12+pulse*18;} else {y+=Math.sin(Date.now()/420)*1;}ctx.fillStyle='rgba(0,0,0,.32)';rr(x,y+5,w,h,15);ctx.fill();let g=ctx.createLinearGradient(0,y,0,y+h);g.addColorStop(0,c1);g.addColorStop(1,c2);ctx.fillStyle=g;rr(x,y,w,h,15);ctx.fill();ctx.shadowBlur=0;ctx.fillStyle='rgba(255,255,255,.16)';rr(x+5,y+4,w-10,Math.max(12,h*.32),12);ctx.fill();ctx.strokeStyle=glow?'rgba(187,247,208,.85)':'rgba(255,255,255,.28)';ctx.lineWidth=1.5;ctx.stroke();ctx.fillStyle='white';ctx.font='bold 22px Arial';ctx.textAlign='center';ctx.fillText(text,x+w/2,y+h/2+8);if(icon){ctx.font='28px Arial';ctx.fillText(icon,x+w-34,y+h/2+10)}ctx.restore()}
+function bigButton(x,y,w,h,text,icon,c1,c2,mode='normal'){
+  ctx.save();
+
+  const pulse=(Math.sin(Date.now()/260)+1)/2;
+
+  // زر ابدأ فقط: حركة + إضاءة
+  if(mode==='start'){
+    y+=Math.sin(Date.now()/420)*2;
+    ctx.shadowColor='rgba(34,197,94,.95)';
+    ctx.shadowBlur=14+pulse*22;
+  }
+
+  // أزرار الصفحة الرئيسية فقط: حركة بدون إضاءة
+  if(mode==='move'){
+    y+=Math.sin(Date.now()/420)*1.5;
+  }
+
+  // ظل الزر
+  ctx.fillStyle='rgba(0,0,0,.32)';
+  rr(x,y+5,w,h,15);
+  ctx.fill();
+
+  let g=ctx.createLinearGradient(0,y,0,y+h);
+  g.addColorStop(0,c1);
+  g.addColorStop(1,c2);
+  ctx.fillStyle=g;
+  rr(x,y,w,h,15);
+  ctx.fill();
+
+  ctx.shadowBlur=0;
+
+  // لمعة علوية
+  ctx.fillStyle='rgba(255,255,255,.16)';
+  rr(x+5,y+4,w-10,Math.max(12,h*.32),12);
+  ctx.fill();
+
+  ctx.strokeStyle=mode==='start'?'rgba(187,247,208,.85)':'rgba(255,255,255,.28)';
+  ctx.lineWidth=1.5;
+  ctx.stroke();
+
+  ctx.fillStyle='white';
+  ctx.font='bold 22px Arial';
+  ctx.textAlign='center';
+  ctx.fillText(text,x+w/2,y+h/2+8);
+
+  if(icon){
+    ctx.font='28px Arial';
+    ctx.fillText(icon,x+w-34,y+h/2+10);
+  }
+
+  ctx.restore();
+}
 function tapEffect(x,y){ctx.save();ctx.fillStyle='rgba(255,255,255,.18)';ctx.beginPath();ctx.arc(x,y,26,0,Math.PI*2);ctx.fill();ctx.strokeStyle='rgba(255,255,255,.35)';ctx.lineWidth=2;ctx.stroke();ctx.restore()}
 function drawAdSlot(x,y,w,h,label){ctx.save();ctx.fillStyle='rgba(15,23,42,.72)';rr(x,y,w,h,10);ctx.fill();ctx.setLineDash([6,5]);ctx.strokeStyle='rgba(250,204,21,.55)';ctx.lineWidth=1.5;rr(x,y,w,h,10);ctx.stroke();ctx.setLineDash([]);ctx.fillStyle='rgba(250,204,21,.88)';ctx.font='bold 12px Arial';ctx.textAlign='center';ctx.fillText(label||t('📢 مساحة إعلان','📢 Ad Space'),x+w/2,y+h/2+4);ctx.restore()}
 function logo(){ctx.textAlign='center';ctx.font='900 40px Tahoma';ctx.lineWidth=7;ctx.strokeStyle='#020617';ctx.strokeText(t('سباق','Infinity'),200,140);ctx.fillStyle='white';ctx.fillText(t('سباق','Infinity'),200,140);ctx.font='900 47px Tahoma';ctx.strokeText(t('اللانهاية','Race'),200,185);let g=ctx.createLinearGradient(120,180,280,225);g.addColorStop(0,'#fde047');g.addColorStop(1,'#f97316');ctx.fillStyle=g;ctx.fillText(t('اللانهاية','Race'),200,185);ctx.font='34px Arial';ctx.fillText('🏎️',285,205)}
-function home(){bg();ctx.fillStyle='rgba(0,0,0,.35)';ctx.fillRect(0,0,GAME_W,GAME_H);panel(36,35,328,595,24);logo();ctx.textAlign='center';ctx.fillStyle='rgba(15,23,42,.82)';rr(72,238,256,44,14);ctx.fill();ctx.fillStyle='white';ctx.font='bold 17px Arial';ctx.fillText('❤️ 3      🪙 '+coins+'      💎 '+unlockedCars.length,200,266);
-let startPulse=(Math.sin(Date.now()/260)+1)/2;
-ctx.save();
-ctx.shadowColor='rgba(34,197,94,.95)';
-ctx.shadowBlur=18+startPulse*24;
-ctx.fillStyle='rgba(34,197,94,.18)';
-rr(70,300,260,62,16);ctx.fill();
-ctx.restore();
-let btnMove=Math.sin(Date.now()/420)*3;
-bigButton(70,300+btnMove,260,62,t('ابدأ اللعب','Start Game'),'▶','#22c55e','#15803d',true);bigButton(70,374,260,54,t('المتجر','Shop'),'🛒','#0ea5e9','#0369a1');bigButton(70,440,260,54,t('الإعدادات','Settings'),'⚙️','#64748b','#334155');bigButton(70,502,260,50,t('تعليمات','How to Play'),'؟','#7c3aed','#5b21b6');ctx.fillStyle='rgba(15,23,42,.82)';rr(60,575,280,28,14);ctx.fill();ctx.fillStyle='#cbd5e1';ctx.font='13px Arial';ctx.fillText(t('تجنب السيارات واجمع العملات','Avoid cars and collect coins'),200,594);
-// Ad slot (Home)
-drawAdSlot(80,605,240,24,t('📢 إعلان','📢 Ad'));ctx.textAlign='start'}
+function home(){
+  bg();
+  ctx.fillStyle='rgba(0,0,0,.35)';
+  ctx.fillRect(0,0,GAME_W,GAME_H);
+  panel(36,35,328,595,24);
+  logo();
+
+  ctx.textAlign='center';
+  ctx.fillStyle='rgba(15,23,42,.82)';
+  rr(72,238,256,44,14);ctx.fill();
+  ctx.fillStyle='white';
+  ctx.font='bold 17px Arial';
+  ctx.fillText('❤️ 3      🪙 '+coins+'      💎 '+unlockedCars.length,200,266);
+
+  // زر ابدأ فقط: حركة + إضاءة
+  bigButton(70,300,260,62,t('ابدأ اللعب','Start Game'),'▶','#22c55e','#15803d','start');
+
+  // الثلاثة أزرار في الرئيسية: حركة فقط بدون إضاءة
+  bigButton(70,374,260,54,t('المتجر','Shop'),'🛒','#0ea5e9','#0369a1','move');
+  bigButton(70,440,260,54,t('الإعدادات','Settings'),'⚙️','#64748b','#334155','move');
+  bigButton(70,502,260,50,t('تعليمات','How to Play'),'؟','#7c3aed','#5b21b6','move');
+
+  ctx.fillStyle='rgba(15,23,42,.82)';
+  rr(60,575,280,28,14);ctx.fill();
+  ctx.fillStyle='#cbd5e1';
+  ctx.font='13px Arial';
+  ctx.fillText(t('تجنب السيارات واجمع العملات','Avoid cars and collect coins'),200,594);
+  drawAdSlot(80,605,240,24,t('📢 إعلان','📢 Ad'));
+  ctx.textAlign='start';
+}
 function setMenu(){leftBtn.style.display='none';rightBtn.style.display='none';startBtn.style.display='none';rewardBtn.style.display='none';applyLang()}
 function stopHomeAnimation(){if(homeAnimId){cancelAnimationFrame(homeAnimId);homeAnimId=null}}
 function startHomeAnimation(){
@@ -308,7 +379,7 @@ function showHome(){screen='home';gameRunning=false;paused=false;cancelAnimation
 function shop(){screen='shop';gameRunning=false;paused=false;cancelAnimationFrame(animationId);setMenu();bg();ctx.fillStyle='rgba(0,0,0,.45)';ctx.fillRect(0,0,GAME_W,GAME_H);panel(18,35,364,585,24);ctx.textAlign='center';ctx.font='900 30px Tahoma';ctx.fillStyle='white';ctx.fillText(t('متجر السيارات','Car Shop'),200,85);ctx.fillStyle='#fde047';ctx.font='bold 17px Arial';ctx.fillText(t('عملاتك: ','Coins: ')+coins+' 🪙',200,118);Object.entries(carColors).forEach(([id,c],i)=>{let col=i%2,row=Math.floor(i/2),x=35+col*171,y=145+row*90,owned=unlockedCars.includes(id),sel=selectedCar===id;ctx.fillStyle=sel?'rgba(34,197,94,.34)':'rgba(15,23,42,.82)';rr(x,y,158,74,17);ctx.fill();ctx.strokeStyle=sel?'#86efac':'rgba(148,163,184,.28)';ctx.stroke();car(x+12,y+15,32,45,c.color,c.glass,true,c.type);ctx.fillStyle='white';ctx.font='bold 13px Arial';ctx.fillText(tr(c.name),x+84,y+25);ctx.fillStyle=owned?'#86efac':'#fde68a';ctx.font='12px Arial';ctx.fillText(owned?(sel?t('محدد ✅','Selected ✅'):t('اختيار ','Select ')+(i+1)):t('السعر ','Price ')+c.price+' 🪙',x+84,y+54)});// Ad slot (Shop)
 drawAdSlot(70,520,260,28,t('📢 إعلان المتجر','📢 Shop Ad'));
 bigButton(110,568,180,44,t('رجوع','Back'),'↩','#2563eb','#1e40af');ctx.textAlign='start'}
-function settingsPage(){screen='settings';gameRunning=false;paused=false;cancelAnimationFrame(animationId);setMenu();bg();ctx.fillStyle='rgba(0,0,0,.5)';ctx.fillRect(0,0,GAME_W,GAME_H);panel(42,80,316,540,24);ctx.textAlign='center';ctx.fillStyle='white';ctx.font='900 30px Tahoma';ctx.fillText(t('الإعدادات','Settings'),200,120);function label(text,y){ctx.font='bold 13px Arial';ctx.fillStyle='rgba(203,213,225,.88)';ctx.textAlign='center';ctx.fillText(text,200,y)}ctx.save();ctx.beginPath();ctx.rect(50,140,300,360);ctx.clip();let y=170-settingsScroll,gap=78;label(t('التحكم','Controls'),y);bigButton(70,y+10,260,46,controlType==='buttons'?t('أزرار','Buttons'):t('سحب','Swipe'),'🎮','#0ea5e9','#0369a1');label(t('الاهتزاز','Vibration'),y+gap);bigButton(70,y+gap+10,260,46,vibration?t('مفعل','On'):t('مغلق','Off'),'📳','#22c55e','#15803d');label(t('اللغة','Language'),y+gap*2);bigButton(70,y+gap*2+10,260,46,lang==='ar'?'English':'العربية','🌐','#7c3aed','#5b21b6');label(t('تقييم اللعبة','Rate Game'),y+gap*3);bigButton(70,y+gap*3+10,260,46,t('تقييم','Rate'),'⭐','#f59e0b','#b45309');label(t('إعادة ضبط اللعبة','Reset Game'),y+gap*4);bigButton(70,y+gap*4+10,260,46,t('إعادة ضبط','Reset'),'♻️','#ef4444','#991b1b');ctx.restore();ctx.fillStyle='rgba(203,213,225,.65)';ctx.font='12px Arial';ctx.textAlign='center';ctx.fillText(t('اسحب للأعلى أو للأسفل لعرض خيارات أكثر','Swipe up/down for more options'),200,520);bigButton(90,545,220,48,t('رجوع','Back'),'↩','#2563eb','#1e40af');ctx.textAlign='start'}
+function settingsPage(){screen='settings';if(Math.abs(settingsTargetScroll-settingsScroll)>0.5){settingsScroll+=(settingsTargetScroll-settingsScroll)*0.28}else{settingsScroll=settingsTargetScroll;}gameRunning=false;paused=false;cancelAnimationFrame(animationId);setMenu();bg();ctx.fillStyle='rgba(0,0,0,.5)';ctx.fillRect(0,0,GAME_W,GAME_H);panel(42,80,316,540,24);ctx.textAlign='center';ctx.fillStyle='white';ctx.font='900 30px Tahoma';ctx.fillText(t('الإعدادات','Settings'),200,120);function label(text,y){ctx.font='bold 13px Arial';ctx.fillStyle='rgba(203,213,225,.88)';ctx.textAlign='center';ctx.fillText(text,200,y)}ctx.save();ctx.beginPath();ctx.rect(50,140,300,360);ctx.clip();let y=170-settingsScroll,gap=78;label(t('التحكم','Controls'),y);bigButton(70,y+10,260,46,controlType==='buttons'?t('أزرار','Buttons'):t('سحب','Swipe'),'🎮','#0ea5e9','#0369a1');label(t('الاهتزاز','Vibration'),y+gap);bigButton(70,y+gap+10,260,46,vibration?t('مفعل','On'):t('مغلق','Off'),'📳','#22c55e','#15803d');label(t('اللغة','Language'),y+gap*2);bigButton(70,y+gap*2+10,260,46,lang==='ar'?'English':'العربية','🌐','#7c3aed','#5b21b6');label(t('تقييم اللعبة','Rate Game'),y+gap*3);bigButton(70,y+gap*3+10,260,46,t('تقييم','Rate'),'⭐','#f59e0b','#b45309');label(t('إعادة ضبط اللعبة','Reset Game'),y+gap*4);bigButton(70,y+gap*4+10,260,46,t('إعادة ضبط','Reset'),'♻️','#ef4444','#991b1b');ctx.restore();ctx.fillStyle='rgba(203,213,225,.65)';ctx.font='12px Arial';ctx.textAlign='center';ctx.fillText(t('اسحب للأعلى أو للأسفل لعرض خيارات أكثر','Swipe up/down for more options'),200,520);bigButton(90,545,220,48,t('رجوع','Back'),'↩','#2563eb','#1e40af');ctx.textAlign='start'}
 function ratePage(){screen='rate';gameRunning=false;paused=false;cancelAnimationFrame(animationId);setMenu();bg();ctx.fillStyle='rgba(0,0,0,.55)';ctx.fillRect(0,0,GAME_W,GAME_H);panel(40,160,320,300,24);ctx.textAlign='center';ctx.fillStyle='white';ctx.font='900 28px Tahoma';ctx.fillText(t('تقييم اللعبة','Rate Game'),200,210);ctx.font='16px Arial';ctx.fillStyle='#cbd5e1';ctx.fillText(t('قريبًا سيتم إضافة هذه الميزة ⭐','This feature is coming soon ⭐'),200,260);bigButton(100,340,200,50,t('رجوع','Back'),'↩','#2563eb','#1e40af');ctx.textAlign='start'}
 function instructionsPage(){
   screen='instructions';gameRunning=false;paused=false;cancelAnimationFrame(animationId);setMenu();
@@ -424,7 +495,7 @@ if(rand<0.25){
 }let message='',rewardIcon='🎁';if(reward==='heart'){pendingGiftLives=1;rewardIcon='❤️';message=t('حصلت على قلب للعبة القادمة!','Extra life for next game!')}else if(reward==='magnet'){pendingGiftMagnet=360;rewardIcon='🧲';message=t('حصلت على مغناطيس للعبة القادمة!','Magnet for next game!')}else if(reward==='shield'){pendingGiftShield=1;rewardIcon='🛡️';message=t('حصلت على درع للعبة القادمة!','Shield for next game!')}else{let amount=reward==='coins5'?5:reward==='coins10'?10:15;coins+=amount;rewardIcon='🪙';message=t('حصلت على '+amount+' عملات!','You got '+amount+' coins!');saveData()}beep('power');ui();playGiftExplosion(rewardIcon,message)}
 function playGiftExplosion(rewardIcon,message){let start=Date.now();const particles=[];const icons=['✨','⭐','💥','🎉',rewardIcon];for(let i=0;i<24;i++){let angle=(Math.PI*2*i)/24,speed=2.5+Math.random()*4;particles.push({x:200,y:340,vx:Math.cos(angle)*speed,vy:Math.sin(angle)*speed,icon:icons[Math.floor(Math.random()*icons.length)],size:18+Math.random()*16,life:1})}function drawExplosion(){let elapsed=Date.now()-start;bg();ctx.fillStyle='rgba(0,0,0,.62)';ctx.fillRect(0,0,GAME_W,GAME_H);panel(45,150,310,360,24);ctx.textAlign='center';if(elapsed<450){let scale=1+elapsed/450;ctx.save();ctx.translate(200,335);ctx.scale(scale,scale);ctx.shadowColor='rgba(250,204,21,1)';ctx.shadowBlur=30;ctx.font='82px Arial';ctx.fillText('🎁',0,28);ctx.restore()}particles.forEach(p=>{p.x+=p.vx;p.y+=p.vy;p.vy+=.05;p.life-=.015;ctx.save();ctx.globalAlpha=Math.max(0,p.life);ctx.font=p.size+'px Arial';ctx.fillText(p.icon,p.x,p.y);ctx.restore()});let pop=Math.min(1,elapsed/700);ctx.save();ctx.translate(200,315);ctx.scale(.6+pop*.45,.6+pop*.45);ctx.shadowColor='rgba(250,204,21,1)';ctx.shadowBlur=24;ctx.font='78px Arial';ctx.fillText(rewardIcon,0,25);ctx.restore();ctx.fillStyle='white';ctx.font='bold 19px Arial';ctx.fillText('🎁 '+message,200,410);ctx.fillStyle='#cbd5e1';ctx.font='14px Arial';ctx.fillText(t('سيتم الرجوع لشاشة النهاية','Returning to game over'),200,448);ctx.textAlign='start';if(elapsed<2100)requestAnimationFrame(drawExplosion);else drawEndScreen()}drawExplosion()}
 function confirmResetPage(){screen='confirmReset';gameRunning=false;paused=false;cancelAnimationFrame(animationId);setMenu();bg();ctx.fillStyle='rgba(0,0,0,.6)';ctx.fillRect(0,0,GAME_W,GAME_H);panel(38,145,324,360,24);ctx.textAlign='center';ctx.fillStyle='white';ctx.font='900 26px Tahoma';ctx.fillText(t('تأكيد إعادة الضبط','Confirm Reset'),200,200);ctx.font='16px Arial';ctx.fillStyle='#cbd5e1';ctx.fillText(t('هل أنت متأكد؟','Are you sure?'),200,250);ctx.fillText(t('سيتم حذف العملات والسيارات وأفضل نتيجة','Coins, cars and best score will be deleted'),200,282);bigButton(70,330,260,50,t('نعم، امسح','Yes, Reset'),'✅','#ef4444','#991b1b');bigButton(90,405,220,50,t('لا، رجوع','No, Back'),'↩','#2563eb','#1e40af');ctx.textAlign='start'}
-function factoryReset(){localStorage.removeItem('coins');localStorage.removeItem('bestScore');localStorage.removeItem('unlockedCars');localStorage.removeItem('selectedCar');localStorage.removeItem('controlType');localStorage.removeItem('vibration');coins=0;bestScore=0;unlockedCars=['red'];selectedCar='red';controlType='buttons';vibration=false;settingsScroll=0;ui();adBox.textContent=t('تم ضبط اللعبة من جديد','Game reset successfully');settingsPage()}
+function factoryReset(){localStorage.removeItem('coins');localStorage.removeItem('bestScore');localStorage.removeItem('unlockedCars');localStorage.removeItem('selectedCar');localStorage.removeItem('controlType');localStorage.removeItem('vibration');coins=0;bestScore=0;unlockedCars=['red'];selectedCar='red';controlType='buttons';vibration=false;settingsScroll=0;settingsTargetScroll=0;ui();adBox.textContent=t('تم ضبط اللعبة من جديد','Game reset successfully');settingsPage()}
 function rewardLife(){if(screen==='game'&&gameRunning){adBox.textContent=t('المكافأة تظهر بعد الخسارة فقط','Reward appears after game over');return}if(rewardUsedThisRound){adBox.textContent=t('استخدمت المكافأة هذه الجولة','Reward already used');return}rewardUsedThisRound=true;lives=Math.max(lives,1)+1;ui();adBox.textContent=t('تمت إضافة قلب إضافي ❤️','Extra life added ❤️');beep('power')}
 function toggleMute(){unlockAudio();muted=!muted;muteTop.textContent=muted?'🔇':'🔊';if(!muted)beep('power')}
 startBtn.addEventListener('click',startGame);shopBtn.addEventListener('click',shop);homeBtn.addEventListener('click',showHome);rewardBtn.addEventListener('click',rewardLife);muteTop.addEventListener('click',toggleMute);pauseTop.addEventListener('click',()=>{if(screen==='game')togglePause();else if(screen==='end')startGame()});
@@ -434,7 +505,7 @@ function handleCanvasTap(x,y){
     if(x>80&&x<320&&y>410&&y<460){paused=false;gameRunning=false;cancelAnimationFrame(animationId);showHome();return}
   }
   if(screen==='home'){
-    if(x>70&&x<330&&y>300&&y<362){startGame();return}
+    if(x>70&&x<330&&y>300&&y<362){beep('power');softVibrate(35);startGame();return}
     if(x>70&&x<330&&y>374&&y<428){shop();return}
     if(x>70&&x<330&&y>440&&y<494){settingsPage();return}
     if(x>70&&x<330&&y>502&&y<552){instructionsPage();return}
@@ -448,11 +519,11 @@ function handleCanvasTap(x,y){
   if(screen==='settings'){
     if(x>90&&x<310&&y>545&&y<593){showHome();return}
     let sy=y+settingsScroll;
-    if(x>70&&x<330&&sy>180&&sy<230){controlType=controlType==='buttons'?'swipe':'buttons';localStorage.setItem('controlType',controlType);settingsPage();return}
-    if(x>70&&x<330&&sy>258&&sy<308){vibration=!vibration;localStorage.setItem('vibration',vibration);settingsPage();return}
-    if(x>70&&x<330&&sy>336&&sy<386){lang=lang==='ar'?'en':'ar';localStorage.setItem('gameLang',lang);settingsPage();return}
+    if(x>70&&x<330&&sy>180&&sy<230){settingFeedback();controlType=controlType==='buttons'?'swipe':'buttons';localStorage.setItem('controlType',controlType);settingsPage();return}
+    if(x>70&&x<330&&sy>258&&sy<308){softVibrate(30);vibration=!vibration;localStorage.setItem('vibration',vibration);beep('power');settingsPage();return}
+    if(x>70&&x<330&&sy>336&&sy<386){settingFeedback();lang=lang==='ar'?'en':'ar';localStorage.setItem('gameLang',lang);settingsPage();return}
     if(x>70&&x<330&&sy>414&&sy<464){ratePage();return}
-    if(x>70&&x<330&&sy>492&&sy<542){confirmResetPage();return}
+    if(x>70&&x<330&&sy>492&&sy<542){settingFeedback();confirmResetPage();return}
   }
   if(screen==='gift'){
     if(x>120&&x<280&&y>285&&y<420){openBestReward();return}
@@ -521,7 +592,7 @@ canvas.addEventListener('pointerup',e=>{
   // الإعدادات فقط تسمح بالسحب للتمرير
   if(screen==='settings'){
     if(Math.abs(dy)>25){
-      settingsScroll=Math.max(0,Math.min(95,settingsScroll-dy));
+      settingsTargetScroll=Math.max(0,Math.min(95,settingsTargetScroll-dy*0.55));
       settingsPage();
     }
     return;
@@ -547,7 +618,7 @@ function bindBtn(b,side){
   b.addEventListener('mouseleave',()=>keys[side]=false);
 }
 bindBtn(leftBtn,'left');bindBtn(rightBtn,'right');
-canvas.addEventListener('wheel',e=>{if(screen!=='settings')return;e.preventDefault();settingsScroll=Math.max(0,Math.min(95,settingsScroll+e.deltaY));settingsPage()},{passive:false});
+canvas.addEventListener('wheel',e=>{if(screen!=='settings')return;e.preventDefault();settingsTargetScroll=Math.max(0,Math.min(95,settingsTargetScroll+e.deltaY*0.55));settingsPage()},{passive:false});
 setupHiDPICanvas();ui();showHome();
 </script>
 </body>
