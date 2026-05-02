@@ -488,6 +488,7 @@ function stopHomeAnimation(){if(homeAnimId){cancelAnimationFrame(homeAnimId);hom
 function startHomeAnimation(){
   stopHomeAnimation();
   function loop(){
+    // لا توقف الحركة في صفحة الإيقاف حتى لو اللعبة تعتبر شغالة
     if(gameRunning && screen!=='pause')return;
 
     if(screen==='home')home();
@@ -496,6 +497,7 @@ function startHomeAnimation(){
     else if(screen==='instructions')instructionsPage();
     else if(screen==='rate')ratePage();
     else if(screen==='end')drawEndScreen();
+    else if(screen==='pause')drawPauseScreen();
 
     homeAnimId=requestAnimationFrame(loop);
   }
@@ -648,15 +650,18 @@ function drawPauseScreen(){
 function togglePause(){
   if(screen!=='game' && screen!=='pause')return;
 
-  paused=!paused;
-
-  if(paused){
-    cancelAnimationFrame(animationId);
+  if(screen==='game'){
+    paused=true;
     screen='pause';
+    cancelAnimationFrame(animationId);
     drawPauseScreen();
-    startHomeAnimation();
-  }else{
+    startHomeAnimation(); // هذا هو اللي يخلي أزرار الإيقاف تتحرك باستمرار
+    return;
+  }
+
+  if(screen==='pause'){
     stopHomeAnimation();
+    paused=false;
     screen='game';
     pauseTop.textContent='⏸';
     lastFrameTime=0;
