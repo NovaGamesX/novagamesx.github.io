@@ -74,7 +74,6 @@ function redrawScreen(){
   else if(screen==='settings')settingsPage();
   else if(screen==='instructions')instructionsPage();
   else if(screen==='rate')ratePage();
-  else if(screen==='contact')contactPage();
   else if(screen==='end')drawEndScreen();
     else if(screen==='pause')drawPauseScreen();
   startHomeAnimation();
@@ -524,7 +523,6 @@ function startHomeAnimation(){
     else if(screen==='settings')settingsPage();
     else if(screen==='instructions')instructionsPage();
     else if(screen==='rate')ratePage();
-    else if(screen==='contact')contactPage();
     else if(screen==='end')drawEndScreen();
     else if(screen==='pause')drawPauseScreen();
 
@@ -568,38 +566,8 @@ function shop(){
   drawAdSlot(70,520,260,28,t('📢 إعلان المتجر','📢 Shop Ad'));
   bigButton(110,568,180,44,t('رجوع','Back'),'↩','#2563eb','#1e40af');ctx.textAlign='start'
 }
-function settingsPage(){screen='settings';if(Math.abs(settingsTargetScroll-settingsScroll)>0.5){settingsScroll+=(settingsTargetScroll-settingsScroll)*0.28}else{settingsScroll=settingsTargetScroll;}if(settingsReturnScreen==='pause'){paused=true;cancelAnimationFrame(animationId);}else{gameRunning=false;paused=false;cancelAnimationFrame(animationId);}setMenu();bg();ctx.fillStyle='rgba(0,0,0,.5)';ctx.fillRect(0,0,GAME_W,GAME_H);panel(42,80,316,540,24);ctx.textAlign='center';ctx.fillStyle='white';ctx.font='900 30px Tahoma';ctx.fillText(t('الإعدادات','Settings'),200,120);function label(text,y){ctx.font='bold 13px Arial';ctx.fillStyle='rgba(203,213,225,.88)';ctx.textAlign='center';ctx.fillText(text,200,y)}ctx.save();ctx.beginPath();ctx.rect(50,140,300,360);ctx.clip();let y=170-settingsScroll,gap=78;label(t('التحكم','Controls'),y);bigButton(70,y+10,260,46,controlType==='buttons'?t('أزرار','Buttons'):t('سحب','Swipe'),'🎮','#0ea5e9','#0369a1');label(t('الاهتزاز','Vibration'),y+gap);bigButton(70,y+gap+10,260,46,vibration?t('مفعل','On'):t('مغلق','Off'),'📳','#22c55e','#15803d');label(t('اللغة','Language'),y+gap*2);bigButton(70,y+gap*2+10,260,46,lang==='ar'?'English':'العربية','🌐','#7c3aed','#5b21b6');label(t('إعادة ضبط اللعبة','Reset Game'),y+gap*3);bigButton(70,y+gap*3+10,260,46,t('إعادة ضبط','Reset'),'♻️','#ef4444','#991b1b');label(t('تقييم اللعبة','Rate Game'),y+gap*4);bigButton(70,y+gap*4+10,260,46,t('تقييم','Rate'),'⭐','#f59e0b','#b45309');label(t('تواصل معنا','Contact Us'),y+gap*5);bigButton(70,y+gap*5+10,260,46,t('تواصل معنا','Contact Us'),'✉️','#0ea5e9','#0369a1');ctx.restore();ctx.fillStyle='rgba(203,213,225,.65)';ctx.font='12px Arial';ctx.textAlign='center';ctx.fillText(t('اسحب للأعلى أو للأسفل لعرض خيارات أكثر','Swipe up/down for more options'),200,520);bigButton(90,545,220,48,t('رجوع','Back'),'↩','#2563eb','#1e40af');ctx.textAlign='start'}
+function settingsPage(){screen='settings';if(Math.abs(settingsTargetScroll-settingsScroll)>0.5){settingsScroll+=(settingsTargetScroll-settingsScroll)*0.28}else{settingsScroll=settingsTargetScroll;}if(settingsReturnScreen==='pause'){paused=true;cancelAnimationFrame(animationId);}else{gameRunning=false;paused=false;cancelAnimationFrame(animationId);}setMenu();bg();ctx.fillStyle='rgba(0,0,0,.5)';ctx.fillRect(0,0,GAME_W,GAME_H);panel(42,80,316,540,24);ctx.textAlign='center';ctx.fillStyle='white';ctx.font='900 30px Tahoma';ctx.fillText(t('الإعدادات','Settings'),200,120);function label(text,y){ctx.font='bold 13px Arial';ctx.fillStyle='rgba(203,213,225,.88)';ctx.textAlign='center';ctx.fillText(text,200,y)}ctx.save();ctx.beginPath();ctx.rect(50,140,300,360);ctx.clip();let y=170-settingsScroll,gap=78;label(t('التحكم','Controls'),y);bigButton(70,y+10,260,46,controlType==='buttons'?t('أزرار','Buttons'):t('سحب','Swipe'),'🎮','#0ea5e9','#0369a1');label(t('الاهتزاز','Vibration'),y+gap);bigButton(70,y+gap+10,260,46,vibration?t('مفعل','On'):t('مغلق','Off'),'📳','#22c55e','#15803d');label(t('اللغة','Language'),y+gap*2);bigButton(70,y+gap*2+10,260,46,lang==='ar'?'English':'العربية','🌐','#7c3aed','#5b21b6');label(t('إعادة ضبط اللعبة','Reset Game'),y+gap*3);bigButton(70,y+gap*3+10,260,46,t('إعادة ضبط','Reset'),'♻️','#ef4444','#991b1b');label(t('تقييم اللعبة','Rate Game'),y+gap*4);bigButton(70,y+gap*4+10,260,46,t('تقييم','Rate'),'⭐','#f59e0b','#b45309');ctx.restore();ctx.fillStyle='rgba(203,213,225,.65)';ctx.font='12px Arial';ctx.textAlign='center';ctx.fillText(t('اسحب للأعلى أو للأسفل لعرض خيارات أكثر','Swipe up/down for more options'),200,520);bigButton(90,545,220,48,t('رجوع','Back'),'↩','#2563eb','#1e40af');ctx.textAlign='start'}
 function ratePage(){screen='rate';gameRunning=false;paused=false;cancelAnimationFrame(animationId);setMenu();bg();ctx.fillStyle='rgba(0,0,0,.55)';ctx.fillRect(0,0,GAME_W,GAME_H);panel(40,160,320,300,24);ctx.textAlign='center';ctx.fillStyle='white';ctx.font='900 28px Tahoma';ctx.fillText(t('تقييم اللعبة','Rate Game'),200,210);ctx.font='16px Arial';ctx.fillStyle='#cbd5e1';ctx.fillText(t('قريبًا سيتم إضافة هذه الميزة ⭐','This feature is coming soon ⭐'),200,260);bigButton(100,340,200,50,t('رجوع','Back'),'↩','#2563eb','#1e40af');ctx.textAlign='start'}
-function contactPage(){
-  screen='contact';
-  gameRunning=false;
-  paused=false;
-  cancelAnimationFrame(animationId);
-  setMenu();
-
-  bg();
-  ctx.fillStyle='rgba(0,0,0,.55)';
-  ctx.fillRect(0,0,GAME_W,GAME_H);
-
-  panel(35,145,330,350,24);
-
-  ctx.textAlign='center';
-  ctx.fillStyle='white';
-  ctx.font='900 28px Tahoma';
-  ctx.fillText(t('تواصل معنا','Contact Us'),200,200);
-
-  ctx.fillStyle='#cbd5e1';
-  ctx.font='bold 15px Arial';
-  const contactLines=lang==='ar'
-    ? ['إذا واجهت خلل في اللعبة،','أو عندك فكرة لتحسينها،','يسعدنا تواصلك معنا عبر البريد.']
-    : ['If you find a game issue,','or you have an idea to improve it,','contact us by email.'];
-  contactLines.forEach((line,i)=>ctx.fillText(line,200,245+i*30));
-
-  bigButton(70,345,260,50,t('إرسال إيميل','Send Email'),'✉️','#0ea5e9','#0369a1');
-  bigButton(90,420,220,48,t('رجوع','Back'),'↩','#2563eb','#1e40af');
-
-  ctx.textAlign='start';
-}
 function instructionsPage(){
   screen='instructions';gameRunning=false;paused=false;cancelAnimationFrame(animationId);setMenu();
   bg();
@@ -1228,7 +1196,6 @@ function handleCanvasTap(x,y){
     if(x>70&&x<330&&sy>336&&sy<386){lang=lang==='ar'?'en':'ar';localStorage.setItem('gameLang',lang);settingFeedback();settingsPage();return}
     if(x>70&&x<330&&sy>414&&sy<464){settingFeedback();confirmResetPage();return}
     if(x>70&&x<330&&sy>492&&sy<542){ratePage();return}
-    if(x>70&&x<330&&sy>570&&sy<620){contactPage();return}
   }
   if(screen==='gift'){
     if(x>120&&x<280&&y>285&&y<420){openBestReward();return}
@@ -1239,17 +1206,6 @@ function handleCanvasTap(x,y){
   }
   if(screen==='rate'){
     if(x>100&&x<300&&y>340&&y<390){settingsPage();return}
-  }
-  if(screen==='contact'){
-    if(x>70&&x<330&&y>345&&y<395){
-      const mailSubject=encodeURIComponent('تواصل بخصوص لعبة سباق اللانهاية');
-      const mailBody=encodeURIComponent('السلام عليكم،
-
-');
-      window.location.href='mailto:bilal70051@gmail.com?subject='+mailSubject+'&body='+mailBody;
-      return;
-    }
-    if(x>90&&x<310&&y>420&&y<468){settingsPage();return}
   }
   if(screen==='instructions'){
     if(x>45&&x<190&&y>520&&y<562){window.location.href='privacy.html';return}
@@ -1314,7 +1270,7 @@ canvas.addEventListener('pointerup',e=>{
     return;
   }
   if(screen==='settings'){
-    settingsTargetScroll=Math.max(0,Math.min(175,settingsTargetScroll-dy*.35));
+    settingsTargetScroll=Math.max(0,Math.min(95,settingsTargetScroll-dy*.35));
     settingsPage();
     return;
   }
@@ -1356,7 +1312,7 @@ document.addEventListener('keyup',e=>{
 canvas.addEventListener('wheel',e=>{
   if(screen==='settings'){
     e.preventDefault();
-    settingsTargetScroll=Math.max(0,Math.min(175,settingsTargetScroll+e.deltaY*.25));
+    settingsTargetScroll=Math.max(0,Math.min(95,settingsTargetScroll+e.deltaY*.25));
     settingsPage();
     return;
   }
