@@ -99,8 +99,8 @@ let audioCtx=null;
 function initAudio(){
   try{
     const AudioC=window.AudioContext||window.webkitAudioContext;
-    if(!audioCtx)audioCtx=new AudioC();
-    if(audioCtx.state==='suspended')audioCtx.resume();
+    if(!audioCtx || audioCtx.state==='closed')audioCtx=new AudioC();
+    if(audioCtx.state==='suspended')audioCtx.resume().catch(()=>{});
   }catch(e){}
 }
 let unlockedCars=JSON.parse(localStorage.getItem('unlockedCars')||'["red"]');
@@ -136,17 +136,27 @@ function beep(type){
   try{
     initAudio();
     if(!audioCtx)return;
-    const o=audioCtx.createOscillator();
-    const g=audioCtx.createGain();
-    o.connect(g);
-    g.connect(audioCtx.destination);
-    o.frequency.value=type==='crash'?110:type==='coin'?820:type==='power'?430:560;
-    o.type=type==='crash'?'sawtooth':'sine';
-    const now=audioCtx.currentTime;
-    g.gain.setValueAtTime(.07,now);
-    g.gain.exponentialRampToValueAtTime(.001,now+.22);
-    o.start(now);
-    o.stop(now+.22);
+
+    const play=()=>{
+      try{
+        const o=audioCtx.createOscillator();
+        const g=audioCtx.createGain();
+        o.connect(g);
+        g.connect(audioCtx.destination);
+        o.frequency.value=type==='crash'?110:type==='coin'?820:type==='power'?430:560;
+        o.type=type==='crash'?'sawtooth':'sine';
+        const now=audioCtx.currentTime;
+        g.gain.cancelScheduledValues(now);
+        g.gain.setValueAtTime(.08,now);
+        g.gain.exponentialRampToValueAtTime(.001,now+.22);
+        o.start(now);
+        o.stop(now+.22);
+        o.onended=()=>{try{o.disconnect();g.disconnect()}catch(e){}};
+      }catch(e){}
+    };
+
+    if(audioCtx.state==='running')play();
+    else audioCtx.resume().then(play).catch(()=>{});
   }catch(e){}
 }
 function rr(x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.lineTo(x+w-r,y);ctx.quadraticCurveTo(x+w,y,x+w,y+r);ctx.lineTo(x+w,y+h-r);ctx.quadraticCurveTo(x+w,y+h,x+w-r,y+h);ctx.lineTo(x+r,y+h);ctx.quadraticCurveTo(x,y+h,x,y+h-r);ctx.lineTo(x,y+r);ctx.quadraticCurveTo(x,y,x+r,y);ctx.closePath()}
