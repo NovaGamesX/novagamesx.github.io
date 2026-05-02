@@ -94,6 +94,15 @@ let invincibleTimer=0,magnetTimer=0,shield=0,rewardUsedThisRound=false,shakeTime
 let bestRewardAvailable=false,bestRewardClaimed=false,giftAnimationId=null,giftTimeoutId=null;
 let pendingGiftLives=0,pendingGiftMagnet=0,pendingGiftShield=0;
 let animationId=null;
+let audioCtx=null;
+
+function initAudio(){
+  try{
+    const AudioC=window.AudioContext||window.webkitAudioContext;
+    if(!audioCtx)audioCtx=new AudioC();
+    if(audioCtx.state==='suspended')audioCtx.resume();
+  }catch(e){}
+}
 let unlockedCars=JSON.parse(localStorage.getItem('unlockedCars')||'["red"]');
 let selectedCar=localStorage.getItem('selectedCar')||'red';
 
@@ -122,7 +131,24 @@ function tr(a){return lang==='ar'?a[0]:a[1]}
 function saveData(){localStorage.setItem('coins',coins);localStorage.setItem('unlockedCars',JSON.stringify(unlockedCars));localStorage.setItem('selectedCar',selectedCar)}
 function ui(){coinsText.textContent=screen==='game'?runCoins:coins;livesText.textContent=lives;magnetText.textContent=Math.ceil(magnetTimer/60)}
 function applyLang(){document.title=t('سباق اللانهاية','Infinity Race');startBtn.textContent=t('ابدأ اللعب','Start');shopBtn.textContent=t('🛒 المتجر','🛒 Shop');rewardBtn.textContent=t('🎁 مكافأة','🎁 Reward');homeBtn.textContent=t('🏠 الرئيسية','🏠 Home')}
-function beep(type){if(muted)return;try{const A=window.AudioContext||window.webkitAudioContext,a=new A(),o=a.createOscillator(),g=a.createGain();o.connect(g);g.connect(a.destination);o.frequency.value=type==='crash'?110:type==='coin'?820:type==='power'?430:560;o.type=type==='crash'?'sawtooth':'sine';g.gain.setValueAtTime(.06,a.currentTime);g.gain.exponentialRampToValueAtTime(.001,a.currentTime+.22);o.start();o.stop(a.currentTime+.22)}catch(e){}}
+function beep(type){
+  if(muted)return;
+  try{
+    initAudio();
+    if(!audioCtx)return;
+    const o=audioCtx.createOscillator();
+    const g=audioCtx.createGain();
+    o.connect(g);
+    g.connect(audioCtx.destination);
+    o.frequency.value=type==='crash'?110:type==='coin'?820:type==='power'?430:560;
+    o.type=type==='crash'?'sawtooth':'sine';
+    const now=audioCtx.currentTime;
+    g.gain.setValueAtTime(.07,now);
+    g.gain.exponentialRampToValueAtTime(.001,now+.22);
+    o.start(now);
+    o.stop(now+.22);
+  }catch(e){}
+}
 function rr(x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.lineTo(x+w-r,y);ctx.quadraticCurveTo(x+w,y,x+w,y+r);ctx.lineTo(x+w,y+h-r);ctx.quadraticCurveTo(x+w,y+h,x+w-r,y+h);ctx.lineTo(x+r,y+h);ctx.quadraticCurveTo(x,y+h,x,y+h-r);ctx.lineTo(x,y+r);ctx.quadraticCurveTo(x,y,x+r,y);ctx.closePath()}
 function panel(x,y,w,h,r=24){ctx.fillStyle='rgba(3,7,18,.88)';rr(x,y,w,h,r);ctx.fill();ctx.strokeStyle='rgba(148,163,184,.35)';ctx.lineWidth=2;rr(x,y,w,h,r);ctx.stroke()}
 function city(){let th=themes[(level-1)%themes.length];ctx.fillStyle=th.sky;ctx.fillRect(0,0,GAME_W,GAME_H);cityOffset=(cityOffset+obstacleSpeed*.22)%90;for(let i=0;i<11;i++){let x=(i*52-cityOffset)%500-60,h=75+(i*43%130);ctx.fillStyle=i%2?'rgba(15,23,42,.9)':'rgba(30,41,59,.9)';ctx.fillRect(x,0,44,h);ctx.fillStyle='rgba(251,191,36,.55)';for(let y=14;y<h-10;y+=21){ctx.fillRect(x+9,y,6,8);ctx.fillRect(x+27,y,6,8)}}}
@@ -315,7 +341,7 @@ function requestGameFullscreen(){
   const el=document.documentElement;
   if(!document.fullscreenElement&&el.requestFullscreen){el.requestFullscreen().catch(()=>{});}
 }
-function startGame(){requestGameFullscreen();screen='game';gameRunning=true;paused=false;rewardUsedThisRound=false;score=0;runCoins=0;lives=3+pendingGiftLives;level=1;obstacleSpeed=3;obstacleTimer=0;coinTimer=0;powerTimer=0;obstacles=[];coinItems=[];powers=[];invincibleTimer=0;magnetTimer=pendingGiftMagnet;shield=pendingGiftShield;pendingGiftLives=0;pendingGiftMagnet=0;pendingGiftShield=0;player.x=172;leftBtn.style.display=controlType==='buttons'?'flex':'none';rightBtn.style.display=controlType==='buttons'?'flex':'none';startBtn.style.display='none';rewardBtn.style.display='none';pauseTop.textContent='⏸';pauseTop.style.background='';adBox.textContent=t('مكان الإعلان لاحقًا','Ad space later');cancelAnimationFrame(animationId);ui();gameLoop()}
+function startGame(){initAudio();requestGameFullscreen();screen='game';gameRunning=true;paused=false;rewardUsedThisRound=false;score=0;runCoins=0;lives=3+pendingGiftLives;level=1;obstacleSpeed=3;obstacleTimer=0;coinTimer=0;powerTimer=0;obstacles=[];coinItems=[];powers=[];invincibleTimer=0;magnetTimer=pendingGiftMagnet;shield=pendingGiftShield;pendingGiftLives=0;pendingGiftMagnet=0;pendingGiftShield=0;player.x=172;leftBtn.style.display=controlType==='buttons'?'flex':'none';rightBtn.style.display=controlType==='buttons'?'flex':'none';startBtn.style.display='none';rewardBtn.style.display='none';pauseTop.textContent='⏸';pauseTop.style.background='';adBox.textContent=t('مكان الإعلان لاحقًا','Ad space later');cancelAnimationFrame(animationId);ui();gameLoop()}
 function endGame(){screen='end';gameRunning=false;paused=false;leftBtn.style.display='none';rightBtn.style.display='none';cancelAnimationFrame(animationId);startBtn.style.display='none';rewardBtn.style.display='block';pauseTop.textContent='↻';pauseTop.style.background='linear-gradient(180deg,#22c55e,#15803d)';if(score>bestScore){bestScore=score;bestRewardAvailable=true;bestRewardClaimed=false;localStorage.setItem('bestScore',bestScore);saveData();ui();showGiftBox();return}bestRewardAvailable=false;bestRewardClaimed=false;saveData();ui();drawEndScreen()}
 function drawEndScreen(){screen='end';if(giftAnimationId){cancelAnimationFrame(giftAnimationId);giftAnimationId=null}if(giftTimeoutId){clearTimeout(giftTimeoutId);giftTimeoutId=null}adBox.innerHTML='<b>📢 إعلان</b><br>'+t('مساحة إعلان بعد الخسارة','Ad after game over');bg();ctx.fillStyle='rgba(0,0,0,.55)';ctx.fillRect(0,0,GAME_W,GAME_H);ctx.fillStyle='rgba(239,68,68,.22)';ctx.fillRect(0,0,GAME_W,GAME_H);ctx.fillStyle='#020617';rr(45,115,310,470,24);ctx.fill();ctx.strokeStyle='rgba(255,255,255,.28)';ctx.lineWidth=2;rr(45,115,310,470,24);ctx.stroke();ctx.textAlign='center';ctx.fillStyle='#ef4444';ctx.font='900 34px Arial';ctx.fillText(t('انتهت اللعبة','Game Over'),200,175);ctx.font='42px Arial';ctx.fillText('💔',200,225);ctx.fillStyle='white';ctx.font='bold 18px Arial';ctx.fillText(t('النقاط','Score'),200,262);ctx.fillStyle='#facc15';ctx.font='900 40px Arial';ctx.fillText(score,200,305);ctx.fillStyle='white';ctx.font='bold 19px Arial';ctx.fillText(t('أفضل نتيجة: ','Best: ')+bestScore,200,348);ctx.fillStyle='#fde047';ctx.fillText('🪙 '+coins,200,388);bigButton(70,410,260,52,t('إعادة اللعب','Replay'),'↻','#22c55e','#15803d');bigButton(70,470,260,52,t('الصفحة الرئيسية','Home'),'🏠','#2563eb','#1e40af');bigButton(70,530,260,52,t('مشاركة النتيجة','Share Score'),'📤','#0ea5e9','#0369a1');ctx.textAlign='start'}
 function showGiftBox(){screen='gift';let start=Date.now();function drawGift(){let time=(Date.now()-start)/1000;bg();ctx.fillStyle='rgba(0,0,0,.58)';ctx.fillRect(0,0,GAME_W,GAME_H);panel(45,150,310,350,24);ctx.textAlign='center';ctx.fillStyle='#facc15';ctx.font='900 27px Tahoma';ctx.fillText(t('رقم قياسي جديد!','New Best Score!'),200,210);ctx.fillStyle='#cbd5e1';ctx.font='16px Arial';ctx.fillText(t('اضغط الصندوق لفتح الهدية','Tap the box to open'),200,245);ctx.fillText(t('أو سيتم فتحه تلقائيًا خلال 3 ثواني','Auto opens in 3 seconds'),200,272);let bounce=Math.sin(time*8)*10;ctx.save();ctx.translate(200,360+bounce);ctx.shadowColor='rgba(250,204,21,1)';ctx.shadowBlur=28;ctx.font='86px Arial';ctx.fillText('🎁',0,28);ctx.restore();let left=Math.max(0,3-Math.floor(time));ctx.fillStyle='white';ctx.font='bold 22px Arial';ctx.fillText(left,200,455);ctx.textAlign='start';giftAnimationId=requestAnimationFrame(drawGift)}drawGift();giftTimeoutId=setTimeout(()=>openBestReward(),3000)}
@@ -339,7 +365,7 @@ function factoryReset(){localStorage.removeItem('coins');localStorage.removeItem
 function rewardLife(){if(screen==='game'&&gameRunning){adBox.textContent=t('المكافأة تظهر بعد الخسارة فقط','Reward appears after game over');return}if(rewardUsedThisRound){adBox.textContent=t('استخدمت المكافأة هذه الجولة','Reward already used');return}rewardUsedThisRound=true;lives=Math.max(lives,1)+1;ui();adBox.textContent=t('تمت إضافة قلب إضافي ❤️','Extra life added ❤️');beep('power')}
 function toggleMute(){muted=!muted;muteTop.textContent=muted?'🔇':'🔊'}
 startBtn.addEventListener('click',startGame);shopBtn.addEventListener('click',shop);homeBtn.addEventListener('click',showHome);rewardBtn.addEventListener('click',rewardLife);muteTop.addEventListener('click',toggleMute);pauseTop.addEventListener('click',()=>{if(screen==='game')togglePause();else if(screen==='end')startGame()});
-canvas.addEventListener('click',e=>{const r=canvas.getBoundingClientRect(),x=(e.clientX-r.left)*(GAME_W/r.width),y=(e.clientY-r.top)*(GAME_H/r.height);
+canvas.addEventListener('click',e=>{initAudio();const r=canvas.getBoundingClientRect(),x=(e.clientX-r.left)*(GAME_W/r.width),y=(e.clientY-r.top)*(GAME_H/r.height);
 if(screen==='pause'){
   if(x>80&&x<320&&y>350&&y<400){togglePause();return}
   if(x>80&&x<320&&y>410&&y<460){paused=false;gameRunning=false;cancelAnimationFrame(animationId);showHome();return}
@@ -352,7 +378,7 @@ document.addEventListener('keydown',e=>{if(e.key==='ArrowLeft'||e.key==='a')keys
 document.addEventListener('keyup',e=>{if(e.key==='ArrowLeft'||e.key==='a')keys.left=false;if(e.key==='ArrowRight'||e.key==='d')keys.right=false});
 function bindBtn(b,side){b.addEventListener('touchstart',e=>{e.preventDefault();keys[side]=true});b.addEventListener('touchend',e=>{e.preventDefault();keys[side]=false});b.addEventListener('touchcancel',()=>keys[side]=false);b.addEventListener('mousedown',()=>keys[side]=true);b.addEventListener('mouseup',()=>keys[side]=false);b.addEventListener('mouseleave',()=>keys[side]=false)}bindBtn(leftBtn,'left');bindBtn(rightBtn,'right');
 let touchStartX=0,touchStartY=0;
-canvas.addEventListener('touchstart',e=>{touchStartX=e.touches[0].clientX;touchStartY=e.touches[0].clientY},{passive:true});
+canvas.addEventListener('touchstart',e=>{initAudio();touchStartX=e.touches[0].clientX;touchStartY=e.touches[0].clientY},{passive:true});
 canvas.addEventListener('touchend',e=>{let dx=e.changedTouches[0].clientX-touchStartX,dy=e.changedTouches[0].clientY-touchStartY;if(screen==='settings'){if(Math.abs(dy)>25){settingsScroll=Math.max(0,Math.min(95,settingsScroll-dy));settingsPage()}return}if(screen==='gift'){openBestReward();return}if(controlType!=='swipe'||screen!=='game')return;if(Math.abs(dx)>35&&Math.abs(dx)>Math.abs(dy)){player.x=dx>0?Math.min(player.x+92,300):Math.max(player.x-92,42)}},{passive:true});
 canvas.addEventListener('wheel',e=>{if(screen!=='settings')return;e.preventDefault();settingsScroll=Math.max(0,Math.min(95,settingsScroll+e.deltaY));settingsPage()},{passive:false});
 setupHiDPICanvas();ui();showHome();
