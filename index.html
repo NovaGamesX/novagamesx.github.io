@@ -491,20 +491,511 @@ drawAdSlot(80,470,240,28,t('📢 إعلان','📢 Ad'));
     gameLoop();
   }
 }
-function gameLoop(time=performance.now()){if(!gameRunning||paused)return;
+function gameLoop(time=performance.now()){
+  if(!gameRunning||paused)return;
+
   if(!lastFrameTime)lastFrameTime=time;
-  // تثبيت السرعة: يمنع التسارع/التباطؤ المفاجئ عند اللمس أو ضعف الجهاز
+
+  // سرعة ثابتة وسلسة على الأجهزة القوية والضعيفة
   let rawDelta=(time-lastFrameTime)/16.67;
-  rawDelta=Math.min(1.25,Math.max(0.85,rawDelta));
-  smoothDeltaScale+=(rawDelta-smoothDeltaScale)*0.12;
+  rawDelta=Math.min(1.18,Math.max(0.90,rawDelta));
+  smoothDeltaScale+=(rawDelta-smoothDeltaScale)*0.10;
   deltaScale=smoothDeltaScale;
-  lastFrameTime=time;ctx.save();if(shakeTimer>0){ctx.translate((Math.random()-.5)*8,(Math.random()-.5)*8);shakeTimer--}bg();drawGameNumbers();updatePlayer();updateItems();drawCoins();drawPowers();obstacles.forEach(o=>car(o.x,o.y,o.width,o.height,o.color,o.glass,false,o.type||'classic')); let selected=carColors[selectedCar]||carColors.red;if(shield>0){ctx.save();ctx.shadowColor='#22c55e';ctx.shadowBlur=lowPowerMode?0:28;ctx.strokeStyle='rgba(134,239,172,.9)';ctx.lineWidth=4;ctx.beginPath();ctx.arc(player.x+player.width/2,player.y+player.height/2,58,0,Math.PI*2);ctx.stroke();ctx.restore()}if(magnetTimer>0){ctx.save();ctx.strokeStyle='rgba(96,165,250,.36)';ctx.lineWidth=3;ctx.beginPath();ctx.arc(player.x+player.width/2,player.y+player.height/2,95+Math.sin(score/20)*8,0,Math.PI*2);ctx.stroke();ctx.restore()}if(invincibleTimer%12<7)car(player.x,player.y,player.width,player.height,selected.color,selected.glass,true,selected.type||'sport');scoreFloat+=2*deltaScale;
-score=Math.floor(scoreFloat);
-// سرعة تدريجية ناعمة
-level=Math.floor(score/1000)+1;
-let baseSpeed=3;
-let gradualSpeed=score/3000; // زيادة خفيفة جدًا
-obstacleSpeed=Math.min(6, baseSpeed+gradualSpeed);
+  lastFrameTime=time;
+
+  ctx.save();
+  if(shakeTimer>0){
+    ctx.translate((Math.random()-.5)*8,(Math.random()-.5)*8);
+    shakeTimer--;
+  }
+
+  bg();
+  drawGameNumbers();
+  updatePlayer();
+  updateItems();
+  drawCoins();
+  drawPowers();
+
+  obstacles.forEach(o=>car(o.x,o.y,o.width,o.height,o.color,o.glass,false,o.type||'classic'));
+
+  let selected=carColors[selectedCar]||carColors.red;
+
+  if(shield>0){
+    ctx.save();
+    ctx.shadowColor='#22c55e';
+    ctx.shadowBlur=lowPowerMode?0:28;
+    ctx.strokeStyle='rgba(134,239,172,.9)';
+    ctx.lineWidth=4;
+    ctx.beginPath();
+    ctx.arc(player.x+player.width/2,player.y+player.height/2,58,0,Math.PI*2);
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  if(magnetTimer>0){
+    ctx.save();
+    ctx.strokeStyle='rgba(96,165,250,.36)';
+    ctx.lineWidth=lowPowerMode?2:3;
+    ctx.beginPath();
+    ctx.arc(player.x+player.width/2,player.y+player.height/2,95+Math.sin(score/20)*8,0,Math.PI*2);
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  if(invincibleTimer%12<7){
+    car(player.x,player.y,player.width,player.height,selected.color,selected.glass,true,selected.type||'sport');
+  }
+
+  scoreFloat+=2*deltaScale;
+  score=Math.floor(scoreFloat);
+  level=Math.floor(score/1000)+1;
+
+  // سرعة تدريجية خفيفة جدًا، بدون قفزات مفاجئة
+  const baseSpeed=3;
+  const gradualSpeed=score/3500;
+  obstacleSpeed=Math.min(5.7,baseSpeed+gradualSpeed);
+
+  for(let i=coinItems.length-1;i>=0;i--){
+    if(hitC(coinItems[i])){
+      runCoins++;
+      coins++;
+      scoreFloat+=60;
+      score=Math.floor(scoreFloat);
+      coinItems.splice(i,1);
+      beep('coin');
+      saveData();
+    }
+  }
+
+  for(let i=powers.length-1;i>=0;i--){
+    if(hitC(powers[i])){
+      if(powers[i].type==='magnet')magnetTimer=600;
+      else shield=1;
+      powers.splice(i,1);
+      beep('power');
+    }
+  }
+
+  for(const o of obstacles){
+    if(hit(player,o)){
+      lose();
+      break;
+    }
+  }
+
+  drawEffects();
+  ctx.restore();
+  ui();
+  animationId=requestAnimationFrame(gameLoop);
+}
+
+function requestGameFullscreen(){
+  const el=document.documentElement;
+  if(!document.fullscreenElement&&el.requestFullscreen){
+    el.requestFullscreen().catch(()=>{});
+  }
+}
+
+function startGame(){
+  stopHomeAnimation();
+  unlockAudio();
+  initAudio();
+  requestGameFullscreen();
+  screen='game';
+  gameRunning=true;
+  paused=false;
+  rewardUsedThisRound=false;
+  score=0;
+  scoreFloat=0;
+  smoothDeltaScale=1;
+  deltaScale=1;
+  runCoins=0;
+  lives=3+pendingGiftLives;
+  level=1;
+  obstacleSpeed=3;
+  obstacleTimer=0;
+  coinTimer=0;
+  powerTimer=0;
+  obstacles=[];
+  coinItems=[];
+  powers=[];
+  invincibleTimer=0;
+  magnetTimer=pendingGiftMagnet;
+  shield=pendingGiftShield;
+  pendingGiftLives=0;
+  pendingGiftMagnet=0;
+  pendingGiftShield=0;
+  player.x=172;
+  targetPlayerX=player.x;
+  lastFrameTime=0;
+  leftBtn.style.display=controlType==='buttons'?'flex':'none';
+  rightBtn.style.display=controlType==='buttons'?'flex':'none';
+  startBtn.style.display='none';
+  rewardBtn.style.display='none';
+  pauseTop.textContent='⏸';
+  pauseTop.style.background='';
+  adBox.textContent='';
+  cancelAnimationFrame(animationId);
+  ui();
+  gameLoop();
+}
+
+function endGame(){
+  screen='end';
+  gameRunning=false;
+  paused=false;
+  leftBtn.style.display='none';
+  rightBtn.style.display='none';
+  cancelAnimationFrame(animationId);
+  startBtn.style.display='none';
+  rewardBtn.style.display='block';
+  pauseTop.textContent='↻';
+  pauseTop.style.background='linear-gradient(180deg,#22c55e,#15803d)';
+
+  if(score>bestScore){
+    bestScore=score;
+    bestRewardAvailable=true;
+    bestRewardClaimed=false;
+    localStorage.setItem('bestScore',bestScore);
+    saveData();
+    ui();
+    showGiftBox();
+    return;
+  }
+
+  bestRewardAvailable=false;
+  bestRewardClaimed=false;
+  saveData();
+  ui();
+  drawEndScreen();
+}
+
+function drawEndScreen(){
+  screen='end';
+  if(giftAnimationId){cancelAnimationFrame(giftAnimationId);giftAnimationId=null}
+  if(giftTimeoutId){clearTimeout(giftTimeoutId);giftTimeoutId=null}
+  adBox.textContent='';
+
+  bg();
+  ctx.fillStyle='rgba(0,0,0,.55)';
+  ctx.fillRect(0,0,GAME_W,GAME_H);
+  ctx.fillStyle='rgba(239,68,68,.22)';
+  ctx.fillRect(0,0,GAME_W,GAME_H);
+
+  ctx.fillStyle='#020617';
+  rr(45,90,310,535,24);ctx.fill();
+  ctx.strokeStyle='rgba(255,255,255,.28)';
+  ctx.lineWidth=2;
+  rr(45,90,310,535,24);ctx.stroke();
+
+  ctx.textAlign='center';
+  ctx.fillStyle='#ef4444';
+  ctx.font='900 34px Arial';
+  ctx.fillText(t('انتهت اللعبة','Game Over'),200,150);
+  ctx.font='42px Arial';
+  ctx.fillText('💔',200,197);
+
+  ctx.fillStyle='white';
+  ctx.font='bold 18px Arial';
+  ctx.fillText(t('النقاط','Score'),200,232);
+  ctx.fillStyle='#facc15';
+  ctx.font='900 40px Arial';
+  ctx.fillText(score,200,275);
+
+  ctx.fillStyle='white';
+  ctx.font='bold 19px Arial';
+  ctx.fillText(t('أفضل نتيجة: ','Best: ')+bestScore,200,318);
+  ctx.fillStyle='#fde047';
+  ctx.fillText('🪙 '+coins,200,348);
+
+  bigButton(70,388,260,46,t('إعادة اللعب','Replay'),'↻','#22c55e','#15803d');
+  bigButton(70,443,260,46,t('الصفحة الرئيسية','Home'),'🏠','#2563eb','#1e40af');
+  bigButton(70,498,260,46,t('مشاركة النتيجة','Share Score'),'📤','#0ea5e9','#0369a1');
+
+  ctx.fillStyle='rgba(15,23,42,.82)';rr(70,565,260,40,12);ctx.fill();
+  ctx.setLineDash([6,5]);
+  ctx.strokeStyle='rgba(250,204,21,.65)';
+  ctx.lineWidth=1.5;
+  rr(70,565,260,40,12);ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.fillStyle='rgba(250,204,21,.95)';
+  ctx.font='bold 13px Arial';
+  ctx.fillText(t('📢 إعلان بعد نهاية الجولة','📢 Ad after round'),200,589);
+  ctx.textAlign='start';
+}
+
+function showGiftBox(){
+  screen='gift';
+  let start=Date.now();
+  function drawGift(){
+    let time=(Date.now()-start)/1000;
+    bg();
+    ctx.fillStyle='rgba(0,0,0,.58)';
+    ctx.fillRect(0,0,GAME_W,GAME_H);
+    panel(45,150,310,350,24);
+    ctx.textAlign='center';
+    ctx.fillStyle='#facc15';
+    ctx.font='900 27px Tahoma';
+    ctx.fillText(t('رقم قياسي جديد!','New Best Score!'),200,210);
+    ctx.fillStyle='#cbd5e1';
+    ctx.font='16px Arial';
+    ctx.fillText(t('اضغط الصندوق لفتح الهدية','Tap the box to open'),200,245);
+    ctx.fillText(t('أو سيتم فتحه تلقائيًا خلال 3 ثواني','Auto opens in 3 seconds'),200,272);
+    let bounce=Math.sin(time*8)*10;
+    ctx.save();
+    ctx.translate(200,360+bounce);
+    ctx.shadowColor='rgba(250,204,21,1)';
+    ctx.shadowBlur=lowPowerMode?0:28;
+    ctx.font='86px Arial';
+    ctx.fillText('🎁',0,28);
+    ctx.restore();
+    let left=Math.max(0,3-Math.floor(time));
+    ctx.fillStyle='white';
+    ctx.font='bold 22px Arial';
+    ctx.fillText(left,200,455);
+    ctx.textAlign='start';
+    giftAnimationId=requestAnimationFrame(drawGift);
+  }
+  drawGift();
+  giftTimeoutId=setTimeout(()=>openBestReward(),3000);
+}
+
+function openBestReward(){
+  if(!bestRewardAvailable||bestRewardClaimed)return;
+  bestRewardClaimed=true;
+  bestRewardAvailable=false;
+  if(giftAnimationId){cancelAnimationFrame(giftAnimationId);giftAnimationId=null}
+  if(giftTimeoutId){clearTimeout(giftTimeoutId);giftTimeoutId=null}
+
+  let rand=Math.random();
+  let reward;
+  if(rand<0.25)reward='heart';
+  else if(rand<0.50)reward='magnet';
+  else if(rand<0.75)reward='shield';
+  else{
+    let coinRand=Math.random();
+    if(coinRand<0.33)reward='coins5';
+    else if(coinRand<0.66)reward='coins10';
+    else reward='coins15';
+  }
+
+  let message='',rewardIcon='🎁';
+  if(reward==='heart'){
+    pendingGiftLives=1;rewardIcon='❤️';message=t('حصلت على قلب للعبة القادمة!','Extra life for next game!');
+  }else if(reward==='magnet'){
+    pendingGiftMagnet=360;rewardIcon='🧲';message=t('حصلت على مغناطيس للعبة القادمة!','Magnet for next game!');
+  }else if(reward==='shield'){
+    pendingGiftShield=1;rewardIcon='🛡️';message=t('حصلت على درع للعبة القادمة!','Shield for next game!');
+  }else{
+    let amount=reward==='coins5'?5:reward==='coins10'?10:15;
+    coins+=amount;rewardIcon='🪙';message=t('حصلت على '+amount+' عملات!','You got '+amount+' coins!');saveData();
+  }
+  beep('power');
+  ui();
+  playGiftExplosion(rewardIcon,message);
+}
+
+function playGiftExplosion(rewardIcon,message){
+  let start=Date.now();
+  const particles=[];
+  const icons=['✨','⭐','💥','🎉',rewardIcon];
+  for(let i=0;i<(lowPowerMode?12:24);i++){
+    let angle=(Math.PI*2*i)/(lowPowerMode?12:24),speed=2.5+Math.random()*4;
+    particles.push({x:200,y:340,vx:Math.cos(angle)*speed,vy:Math.sin(angle)*speed,icon:icons[Math.floor(Math.random()*icons.length)],size:18+Math.random()*16,life:1});
+  }
+  function drawExplosion(){
+    let elapsed=Date.now()-start;
+    bg();
+    ctx.fillStyle='rgba(0,0,0,.62)';
+    ctx.fillRect(0,0,GAME_W,GAME_H);
+    panel(45,150,310,360,24);
+    ctx.textAlign='center';
+    particles.forEach(p=>{
+      p.x+=p.vx;p.y+=p.vy;p.vy+=.05;p.life-=.015;
+      ctx.save();ctx.globalAlpha=Math.max(0,p.life);ctx.font=p.size+'px Arial';ctx.fillText(p.icon,p.x,p.y);ctx.restore();
+    });
+    let pop=Math.min(1,elapsed/700);
+    ctx.save();ctx.translate(200,315);ctx.scale(.6+pop*.45,.6+pop*.45);ctx.shadowColor='rgba(250,204,21,1)';ctx.shadowBlur=lowPowerMode?0:24;ctx.font='78px Arial';ctx.fillText(rewardIcon,0,25);ctx.restore();
+    ctx.fillStyle='white';ctx.font='bold 19px Arial';ctx.fillText('🎁 '+message,200,410);
+    ctx.fillStyle='#cbd5e1';ctx.font='14px Arial';ctx.fillText(t('سيتم الرجوع لشاشة النهاية','Returning to game over'),200,448);
+    ctx.textAlign='start';
+    if(elapsed<2100)requestAnimationFrame(drawExplosion);else drawEndScreen();
+  }
+  drawExplosion();
+}
+
+function confirmResetPage(){
+  screen='confirmReset';gameRunning=false;paused=false;cancelAnimationFrame(animationId);setMenu();
+  bg();ctx.fillStyle='rgba(0,0,0,.6)';ctx.fillRect(0,0,GAME_W,GAME_H);
+  panel(38,145,324,360,24);
+  ctx.textAlign='center';ctx.fillStyle='white';ctx.font='900 26px Tahoma';ctx.fillText(t('تأكيد إعادة الضبط','Confirm Reset'),200,200);
+  ctx.font='16px Arial';ctx.fillStyle='#cbd5e1';ctx.fillText(t('هل أنت متأكد؟','Are you sure?'),200,250);
+  ctx.fillText(t('سيتم حذف العملات والسيارات وأفضل نتيجة','Coins, cars and best score will be deleted'),200,282);
+  bigButton(70,330,260,50,t('نعم، امسح','Yes, Reset'),'✅','#ef4444','#991b1b');
+  bigButton(90,405,220,50,t('لا، رجوع','No, Back'),'↩','#2563eb','#1e40af');
+  ctx.textAlign='start';
+}
+
+function factoryReset(){
+  localStorage.removeItem('coins');localStorage.removeItem('bestScore');localStorage.removeItem('unlockedCars');localStorage.removeItem('selectedCar');localStorage.removeItem('controlType');localStorage.removeItem('vibration');
+  coins=0;bestScore=0;unlockedCars=['red'];selectedCar='red';controlType='buttons';vibration=false;settingsScroll=0;settingsTargetScroll=0;ui();adBox.textContent=t('تم ضبط اللعبة من جديد','Game reset successfully');settingsPage();
+}
+
+function rewardLife(){
+  if(screen==='game'&&gameRunning){adBox.textContent=t('المكافأة تظهر بعد الخسارة فقط','Reward appears after game over');return}
+  if(rewardUsedThisRound){adBox.textContent=t('استخدمت المكافأة هذه الجولة','Reward already used');return}
+  rewardUsedThisRound=true;lives=Math.max(lives,1)+1;ui();adBox.textContent=t('تمت إضافة قلب إضافي ❤️','Extra life added ❤️');beep('power');
+}
+
+function toggleMute(){unlockAudio();muted=!muted;muteTop.textContent=muted?'🔇':'🔊';if(!muted)beep('power')}
+
+startBtn.addEventListener('click',startGame);
+shopBtn.addEventListener('click',shop);
+homeBtn.addEventListener('click',showHome);
+rewardBtn.addEventListener('click',rewardLife);
+muteTop.addEventListener('click',toggleMute);
+pauseTop.addEventListener('click',()=>{if(screen==='game')togglePause();else if(screen==='end')startGame()});
+
+function handleCanvasTap(x,y){
+  if(screen==='pause'){
+    if(x>80&&x<320&&y>350&&y<400){togglePause();return}
+    if(x>80&&x<320&&y>410&&y<460){paused=false;gameRunning=false;cancelAnimationFrame(animationId);showHome();return}
+  }
+  if(screen==='home'){
+    if(x>70&&x<330&&y>300&&y<362){softVibrate(25);beep('power');startGame();return}
+    if(x>70&&x<330&&y>374&&y<428){shop();return}
+    if(x>70&&x<330&&y>440&&y<494){settingsPage();return}
+    if(x>70&&x<330&&y>502&&y<552){instructionsPage();return}
+  }
+  if(screen==='shop'){
+    if(x>110&&x<290&&y>568&&y<612){showHome();return}
+    let col=x<200?0:1,row=Math.floor((y-145)/90),i=row*2+col;
+    if(i>=0&&i<8)buyOrSelect(i);
+    return;
+  }
+  if(screen==='settings'){
+    if(x>90&&x<310&&y>545&&y<593){showHome();return}
+    let sy=y+settingsScroll;
+    if(x>70&&x<330&&sy>180&&sy<230){controlType=controlType==='buttons'?'swipe':'buttons';localStorage.setItem('controlType',controlType);settingFeedback();settingsPage();return}
+    if(x>70&&x<330&&sy>258&&sy<308){vibration=!vibration;localStorage.setItem('vibration',vibration);settingFeedback();settingsPage();return}
+    if(x>70&&x<330&&sy>336&&sy<386){lang=lang==='ar'?'en':'ar';localStorage.setItem('gameLang',lang);settingFeedback();settingsPage();return}
+    if(x>70&&x<330&&sy>414&&sy<464){ratePage();return}
+    if(x>70&&x<330&&sy>492&&sy<542){settingFeedback();confirmResetPage();return}
+  }
+  if(screen==='gift'){
+    if(x>120&&x<280&&y>285&&y<420){openBestReward();return}
+  }
+  if(screen==='confirmReset'){
+    if(x>70&&x<330&&y>330&&y<380){settingFeedback();factoryReset();return}
+    if(x>90&&x<310&&y>405&&y<455){settingsPage();return}
+  }
+  if(screen==='rate'){
+    if(x>100&&x<300&&y>340&&y<390){settingsPage();return}
+  }
+  if(screen==='instructions'){
+    if(x>45&&x<190&&y>520&&y<562){window.location.href='privacy.html';return}
+    if(x>210&&x<355&&y>520&&y<562){window.location.href='about.html';return}
+    if(x>90&&x<310&&y>575&&y<617){showHome();return}
+  }
+  if(screen==='end'){
+    if(x>70&&x<330&&y>388&&y<434){startGame();return}
+    if(x>70&&x<330&&y>443&&y<489){showHome();return}
+    if(x>70&&x<330&&y>498&&y<544){shareGame();return}
+  }
+}
+
+let pointerStartX=0,pointerStartY=0,pointerMoved=false,pointerDown=false,lastPointerTap=0;
+
+canvas.addEventListener('pointerdown',e=>{
+  if(e.target!==canvas)return;
+  e.preventDefault();
+  unlockAudio();
+  pointerDown=true;
+  pointerMoved=false;
+  pointerStartX=e.clientX;
+  pointerStartY=e.clientY;
+  if(screen==='game'&&controlType==='swipe'){
+    const r=canvas.getBoundingClientRect();
+    const x=(e.clientX-r.left)*(GAME_W/r.width);
+    targetPlayerX=Math.max(42,Math.min(300,x-player.width/2));
+    player.x=targetPlayerX;
+  }
+  try{canvas.setPointerCapture(e.pointerId)}catch(err){}
+},{passive:false});
+
+canvas.addEventListener('pointermove',e=>{
+  if(!pointerDown)return;
+  e.preventDefault();
+  const dx=e.clientX-pointerStartX;
+  const dy=e.clientY-pointerStartY;
+  if(Math.abs(dx)>12||Math.abs(dy)>12)pointerMoved=true;
+
+  if(screen==='game'&&controlType==='swipe'){
+    const r=canvas.getBoundingClientRect();
+    const x=(e.clientX-r.left)*(GAME_W/r.width);
+    targetPlayerX=Math.max(42,Math.min(300,x-player.width/2));
+    player.x=targetPlayerX;
+  }
+},{passive:false});
+
+canvas.addEventListener('pointerup',e=>{
+  if(!pointerDown)return;
+  e.preventDefault();
+  pointerDown=false;
+  const r=canvas.getBoundingClientRect();
+  const endX=e.clientX,endY=e.clientY;
+  const dx=endX-pointerStartX,dy=endY-pointerStartY;
+  if(!pointerMoved&&Math.abs(dx)<18&&Math.abs(dy)<18){
+    const now=Date.now();
+    if(now-lastPointerTap<220)return;
+    lastPointerTap=now;
+    const x=(endX-r.left)*(GAME_W/r.width);
+    const y=(endY-r.top)*(GAME_H/r.height);
+    handleCanvasTap(x,y);
+    return;
+  }
+  if(screen==='settings'){
+    settingsTargetScroll=Math.max(0,Math.min(95,settingsTargetScroll-dy*.35));
+    settingsPage();
+    return;
+  }
+  if(screen==='game')return;
+},{passive:false});
+canvas.addEventListener('pointercancel',()=>{pointerDown=false});
+
+function bindBtn(b,side){
+  b.addEventListener('pointerdown',e=>{e.preventDefault();unlockAudio();keys[side]=true;b.setPointerCapture&&b.setPointerCapture(e.pointerId)});
+  b.addEventListener('pointerup',e=>{e.preventDefault();keys[side]=false});
+  b.addEventListener('pointercancel',()=>keys[side]=false);
+  b.addEventListener('pointerleave',()=>keys[side]=false);
+  b.addEventListener('mousedown',()=>keys[side]=true);
+  b.addEventListener('mouseup',()=>keys[side]=false);
+  b.addEventListener('mouseleave',()=>keys[side]=false);
+}
+bindBtn(leftBtn,'left');bindBtn(rightBtn,'right');
+
+document.addEventListener('keydown',e=>{
+  if(e.key==='ArrowLeft'||e.key==='a')keys.left=true;
+  if(e.key==='ArrowRight'||e.key==='d')keys.right=true;
+  if(e.key==='Enter')startGame();
+  if(e.key===' '){e.preventDefault();togglePause()}
+  if(screen==='shop'&&['1','2','3','4','5','6','7','8'].includes(e.key))buyOrSelect(Number(e.key)-1);
+});
+document.addEventListener('keyup',e=>{
+  if(e.key==='ArrowLeft'||e.key==='a')keys.left=false;
+  if(e.key==='ArrowRight'||e.key==='d')keys.right=false;
+});
+
+canvas.addEventListener('wheel',e=>{
+  if(screen!=='settings')return;
+  e.preventDefault();
+  settingsTargetScroll=Math.max(0,Math.min(95,settingsTargetScroll+e.deltaY*.25));
+  settingsPage();
+},{passive:false});
+
+setupHiDPICanvas();
+ui();
+showHome();
 </script>
 </body>
 </html>
