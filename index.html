@@ -205,14 +205,45 @@ function rr(x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.lineTo(x+w-r,y);ctx
 function panel(x,y,w,h,r=24){ctx.fillStyle='rgba(3,7,18,.88)';rr(x,y,w,h,r);ctx.fill();ctx.strokeStyle='rgba(148,163,184,.35)';ctx.lineWidth=2;rr(x,y,w,h,r);ctx.stroke()}
 function city(){let th=themes[(level-1)%themes.length];ctx.fillStyle=th.sky;ctx.fillRect(0,0,GAME_W,GAME_H);cityOffset=(cityOffset+obstacleSpeed*.22*deltaScale)%90;let count=lowPowerMode?7:11;for(let i=0;i<count;i++){let x=(i*60-cityOffset)%500-70,h=lowPowerMode?70+(i*31%90):75+(i*43%130);ctx.fillStyle=i%2?'rgba(15,23,42,.9)':'rgba(30,41,59,.9)';ctx.fillRect(x,0,44,h);if(!lowPowerMode){ctx.fillStyle='rgba(251,191,36,.55)';for(let y=14;y<h-10;y+=21){ctx.fillRect(x+9,y,6,8);ctx.fillRect(x+27,y,6,8)}}}}
 function drawSideDecor(){
-  decorOffset=(decorOffset+obstacleSpeed*.7*deltaScale)%140;
-  for(let y=-140+decorOffset;y<GAME_H+80;y+=140){
-    ctx.fillStyle='rgba(20,83,45,.95)';
-    ctx.beginPath();ctx.arc(48,y+36,15,0,Math.PI*2);ctx.fill();
-    ctx.fillStyle='rgba(120,53,15,.95)';ctx.fillRect(45,y+48,6,18);
-    ctx.fillStyle='rgba(30,41,59,.92)';rr(350,y+30,28,30,4);ctx.fill();
-    ctx.fillStyle='rgba(239,68,68,.9)';ctx.beginPath();ctx.moveTo(346,y+32);ctx.lineTo(364,y+14);ctx.lineTo(382,y+32);ctx.closePath();ctx.fill();
-    ctx.fillStyle='rgba(250,204,21,.75)';ctx.fillRect(357,y+42,6,7);ctx.fillRect(369,y+42,6,7);
+  decorOffset=(decorOffset+obstacleSpeed*.55*deltaScale)%190;
+
+  for(let y=-190+decorOffset;y<GAME_H+130;y+=190){
+    // يسار: مبنى خلفي + أشجار أمامية
+    let leftH=58+((Math.floor(y)+90)%55);
+    ctx.fillStyle='rgba(30,41,59,.82)';
+    rr(8,y+20,28,leftH,4);ctx.fill();
+    ctx.fillStyle='rgba(15,23,42,.9)';
+    rr(16,y+8,30,leftH+18,5);ctx.fill();
+    ctx.fillStyle='rgba(250,204,21,.55)';
+    for(let wy=y+22;wy<y+leftH;wy+=17){ctx.fillRect(22,wy,5,6);ctx.fillRect(34,wy,5,6)}
+
+    // شجرة كبيرة يسار بطبقات
+    ctx.fillStyle='rgba(120,53,15,.95)';ctx.fillRect(52,y+76,7,22);
+    ctx.fillStyle='rgba(22,101,52,.98)';
+    ctx.beginPath();ctx.arc(55,y+68,17,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle='rgba(21,128,61,.95)';
+    ctx.beginPath();ctx.arc(47,y+61,12,0,Math.PI*2);ctx.fill();
+    ctx.beginPath();ctx.arc(63,y+58,13,0,Math.PI*2);ctx.fill();
+
+    // يمين: مبنيان مختلفان + أشجار أمامية
+    let rightH=68+((Math.floor(y)*3+40)%70);
+    ctx.fillStyle='rgba(15,23,42,.9)';
+    rr(350,y+18,32,rightH,5);ctx.fill();
+    ctx.fillStyle='rgba(51,65,85,.92)';
+    rr(332,y+45,24,Math.max(40,rightH-20),4);ctx.fill();
+    ctx.fillStyle='rgba(96,165,250,.45)';
+    for(let wy=y+30;wy<y+rightH;wy+=18){ctx.fillRect(356,wy,5,7);ctx.fillRect(369,wy,5,7)}
+    ctx.fillStyle='rgba(250,204,21,.45)';
+    for(let wy=y+55;wy<y+rightH+15;wy+=20){ctx.fillRect(338,wy,5,6);ctx.fillRect(347,wy,5,6)}
+
+    // أشجار يمين بأحجام مختلفة
+    ctx.fillStyle='rgba(120,53,15,.95)';ctx.fillRect(322,y+88,6,18);ctx.fillRect(383,y+72,5,16);
+    ctx.fillStyle='rgba(22,101,52,.98)';
+    ctx.beginPath();ctx.arc(325,y+80,14,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle='rgba(34,197,94,.9)';
+    ctx.beginPath();ctx.arc(316,y+75,10,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle='rgba(21,128,61,.95)';
+    ctx.beginPath();ctx.arc(386,y+65,12,0,Math.PI*2);ctx.fill();
   }
 }
 function bg(){let th=themes[(level-1)%themes.length];city();let g=ctx.createLinearGradient(0,70,0,GAME_H);g.addColorStop(0,th.road1);g.addColorStop(1,th.road2);ctx.fillStyle=g;ctx.fillRect(90,0,220,GAME_H);ctx.fillStyle=th.side;ctx.fillRect(0,0,34,GAME_H);ctx.fillRect(366,0,34,GAME_H);drawSideDecor();ctx.fillStyle='rgba(255,255,255,.55)';ctx.fillRect(56,0,5,GAME_H);ctx.fillRect(339,0,5,GAME_H);ctx.fillStyle='rgba(250,204,21,.95)';ctx.fillRect(70,0,4,GAME_H);ctx.fillRect(326,0,4,GAME_H);roadLineOffset+=obstacleSpeed*deltaScale;if(roadLineOffset>90)roadLineOffset=0;ctx.fillStyle='rgba(255,255,255,.95)';for(let y=-80+roadLineOffset;y<GAME_H;y+=105){rr(153,y,8,58,4);ctx.fill();rr(239,y,8,58,4);ctx.fill()}ctx.fillStyle='rgba(255,255,255,.28)';ctx.font='bold 17px Arial';ctx.textAlign='center';ctx.fillText(tr(th.name),200,40);ctx.textAlign='start'}
