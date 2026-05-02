@@ -1181,12 +1181,14 @@ function handleCanvasTap(x,y){
     if(x>80&&x<320&&y>360&&y<406){settingsReturnScreen='pause';settingsPage();return}
     if(x>80&&x<320&&y>418&&y<464){paused=false;gameRunning=false;cancelAnimationFrame(animationId);showHome();return}
   }
+
   if(screen==='home'){
     if(x>70&&x<330&&y>300&&y<362){softVibrate(25);beep('power');startGame();return}
     if(x>70&&x<330&&y>374&&y<428){shop();return}
     if(x>70&&x<330&&y>440&&y<494){settingsReturnScreen='home';settingsPage();return}
     if(x>70&&x<330&&y>502&&y<552){instructionsPage();return}
   }
+
   if(screen==='shop'){
     if(x>110&&x<290&&y>568&&y<612){showHome();return}
     let sy=y+shopScroll;
@@ -1194,6 +1196,7 @@ function handleCanvasTap(x,y){
     if(x>25&&x<375&&y>125&&y<500&&i>=0&&i<Object.keys(carColors).length)buyOrSelect(i);
     return;
   }
+
   if(screen==='settings'){
     if(x>90&&x<310&&y>545&&y<593){
       if(settingsReturnScreen==='pause'){
@@ -1205,7 +1208,7 @@ function handleCanvasTap(x,y){
       }else{
         showHome();
       }
-      return
+      return;
     }
     let sy=y+settingsScroll;
     if(x>70&&x<330&&sy>180&&sy<230){controlType=controlType==='buttons'?'swipe':'buttons';localStorage.setItem('controlType',controlType);settingFeedback();settingsPage();return}
@@ -1215,16 +1218,20 @@ function handleCanvasTap(x,y){
     if(x>70&&x<330&&sy>492&&sy<542){ratePage();return}
     if(x>70&&x<330&&sy>570&&sy<620){contactPage();return}
   }
+
   if(screen==='gift'){
     if(x>120&&x<280&&y>285&&y<420){openBestReward();return}
   }
+
   if(screen==='confirmReset'){
     if(x>70&&x<330&&y>330&&y<380){settingFeedback();factoryReset();return}
     if(x>90&&x<310&&y>405&&y<455){settingsPage();return}
   }
+
   if(screen==='rate'){
     if(x>100&&x<300&&y>340&&y<390){settingsPage();return}
   }
+
   if(screen==='contact'){
     if(x>70&&x<330&&y>335&&y<385){
       const subject=encodeURIComponent('تواصل بخصوص لعبة سباق اللانهاية');
@@ -1236,11 +1243,13 @@ function handleCanvasTap(x,y){
     }
     if(x>90&&x<310&&y>410&&y<458){settingsPage();return}
   }
+
   if(screen==='instructions'){
     if(x>45&&x<190&&y>520&&y<562){window.location.href='privacy.html';return}
     if(x>210&&x<355&&y>520&&y<562){window.location.href='about.html';return}
     if(x>90&&x<310&&y>575&&y<617){showHome();return}
   }
+
   if(screen==='end'){
     if(x>70&&x<330&&y>388&&y<434){beep('power');softVibrate(35);startGame();return}
     if(x>70&&x<330&&y>443&&y<489){showHome();return}
