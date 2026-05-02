@@ -456,16 +456,16 @@ function startHomeAnimation(){
   stopHomeAnimation();
   function loop(){
     if(gameRunning)return;
+
     if(screen==='home')home();
     else if(screen==='shop')shop();
     else if(screen==='settings')settingsPage();
     else if(screen==='instructions')instructionsPage();
     else if(screen==='rate')ratePage();
     else if(screen==='end')drawEndScreen();
+
     homeAnimId=requestAnimationFrame(loop);
   }
-  loop();
-}
   loop();
 }
 function showHome(){screen='home';gameRunning=false;paused=false;cancelAnimationFrame(animationId);pauseTop.textContent='📤';pauseTop.style.background='linear-gradient(180deg,#0ea5e9,#0369a1)';setMenu();adBox.textContent=t('مكان الإعلان لاحقًا — يظهر بعد نهاية الجولة','Ad space — appears after each round');startHomeAnimation()}
