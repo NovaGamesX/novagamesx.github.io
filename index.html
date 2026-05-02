@@ -349,56 +349,23 @@ function car(x,y,w,h,body,glass='#111827',stripe=true,type='sport'){
 
   ctx.restore();
 }
-function bigButton(x,y,w,h,text,icon,c1,c2,type){
-  ctx.save();
-
-  let pulse=Math.sin(Date.now()/300)*0.05+1;
-
-  if(type==='start-glow'){
-    ctx.shadowColor=c1;
-    ctx.shadowBlur=20;
-    ctx.scale(pulse,pulse);
-    ctx.translate(-x*(pulse-1),-y*(pulse-1));
-  }
-
-  if(type==='move-fast'){
-    let offset=Math.sin(Date.now()/400)*2;
-    y+=offset;
-  }
-
-  let grad=ctx.createLinearGradient(0,y,0,y+h);
-  grad.addColorStop(0,c1);
-  grad.addColorStop(1,c2);
-  ctx.fillStyle=grad;
-  rr(x,y,w,h,12);
-  ctx.fill();
-
-  ctx.fillStyle='white';
-  ctx.font='bold 16px Arial';
-  ctx.textAlign='center';
-  ctx.fillText(icon+' '+text,x+w/2,y+28);
-
-  ctx.restore();
-}
-
-function _old_bigButton(x,y,w,h,text,icon,c1,c2,mode='normal'){
+function bigButton(x,y,w,h,text,icon,c1,c2,mode='normal'){
   ctx.save();
 
   const pulse=(Math.sin(Date.now()/260)+1)/2;
 
-  // زر ابدأ فقط: حركة + إضاءة
+  // زر ابدأ وإعادة اللعب: حركة + إضاءة
   if(mode==='start'){
     y+=Math.sin(Date.now()/420)*2;
     ctx.shadowColor='rgba(34,197,94,.95)';
     ctx.shadowBlur=14+pulse*22;
   }
 
-  // أزرار الصفحة الرئيسية فقط: حركة بدون إضاءة
+  // أزرار الصفحة الرئيسية والنهاية: حركة فقط بدون إضاءة
   if(mode==='move'){
     y+=Math.sin(Date.now()/420)*1.5;
   }
 
-  // ظل الزر
   ctx.fillStyle='rgba(0,0,0,.32)';
   rr(x,y+5,w,h,15);
   ctx.fill();
@@ -412,7 +379,6 @@ function _old_bigButton(x,y,w,h,text,icon,c1,c2,mode='normal'){
 
   ctx.shadowBlur=0;
 
-  // لمعة علوية
   ctx.fillStyle='rgba(255,255,255,.16)';
   rr(x+5,y+4,w-10,Math.max(12,h*.32),12);
   ctx.fill();
@@ -841,9 +807,9 @@ function drawEndScreen(){
   ctx.fillStyle='#fde047';
   ctx.fillText('🪙 '+coins,200,348);
 
-  bigButton(70,388,260,46,t('إعادة اللعب','Replay'),'↻','#22c55e','#15803d','start-glow');
-  bigButton(70,443,260,46,t('الصفحة الرئيسية','Home'),'🏠','#2563eb','#1e40af','move-fast');
-  bigButton(70,498,260,46,t('مشاركة النتيجة','Share Score'),'🔗','#0ea5e9','#0369a1','move-fast');
+  bigButton(70,388,260,46,t('إعادة اللعب','Replay'),'↻','#22c55e','#15803d','start');
+  bigButton(70,443,260,46,t('الصفحة الرئيسية','Home'),'🏠','#2563eb','#1e40af','move');
+  bigButton(70,498,260,46,t('مشاركة النتيجة','Share Score'),'🔗','#0ea5e9','#0369a1','move');
 
   ctx.fillStyle='rgba(15,23,42,.82)';rr(70,565,260,40,12);ctx.fill();
   ctx.setLineDash([6,5]);
