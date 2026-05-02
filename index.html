@@ -349,7 +349,39 @@ function car(x,y,w,h,body,glass='#111827',stripe=true,type='sport'){
 
   ctx.restore();
 }
-function bigButton(x,y,w,h,text,icon,c1,c2,mode='normal'){
+function bigButton(x,y,w,h,text,icon,c1,c2,type){
+  ctx.save();
+
+  let pulse=Math.sin(Date.now()/300)*0.05+1;
+
+  if(type==='start-glow'){
+    ctx.shadowColor=c1;
+    ctx.shadowBlur=20;
+    ctx.scale(pulse,pulse);
+    ctx.translate(-x*(pulse-1),-y*(pulse-1));
+  }
+
+  if(type==='move-fast'){
+    let offset=Math.sin(Date.now()/400)*2;
+    y+=offset;
+  }
+
+  let grad=ctx.createLinearGradient(0,y,0,y+h);
+  grad.addColorStop(0,c1);
+  grad.addColorStop(1,c2);
+  ctx.fillStyle=grad;
+  rr(x,y,w,h,12);
+  ctx.fill();
+
+  ctx.fillStyle='white';
+  ctx.font='bold 16px Arial';
+  ctx.textAlign='center';
+  ctx.fillText(icon+' '+text,x+w/2,y+28);
+
+  ctx.restore();
+}
+
+function _old_bigButton(x,y,w,h,text,icon,c1,c2,mode='normal'){
   ctx.save();
 
   const pulse=(Math.sin(Date.now()/260)+1)/2;
@@ -412,32 +444,24 @@ function home(){
   logo();
 
   ctx.textAlign='center';
-  // شريط الإحصائيات في الصفحة الرئيسية - فخم ومرتب في الوسط
+  // عرض الإحصائيات في الصفحة الرئيسية بدون شريط (مثل HUD)
 ctx.save();
-ctx.fillStyle='rgba(2,6,23,.72)';
-rr(42,235,316,54,18);ctx.fill();
-ctx.strokeStyle='rgba(255,255,255,.20)';ctx.lineWidth=1.6;rr(42,235,316,54,18);ctx.stroke();
-ctx.fillStyle='rgba(255,255,255,.07)';
-rr(50,241,300,14,10);ctx.fill();
+ctx.fillStyle='white';
+ctx.font='bold 16px Arial';
+ctx.textAlign='center';
 
-// الترتيب من اليمين: أعلى نقطة، قلب، عملات، ماس
-const statBoxes=[
-  {x:252,w:78,text:'🏆 '+bestScore},
-  {x:194,w:50,text:'❤️ 3'},
-  {x:118,w:68,text:'🪙 '+coins},
-  {x:70,w:40,text:'💎 '+unlockedCars.length}
+let spacing=55;
+let startX=200-(spacing*1.5);
+
+let stats=[
+  '🏆 '+bestScore,
+  '❤️ 3',
+  '🪙 '+coins,
+  '💎 '+unlockedCars.length
 ];
-statBoxes.forEach(s=>{
-  let sg=ctx.createLinearGradient(0,246,0,278);
-  sg.addColorStop(0,'rgba(30,41,59,.92)');
-  sg.addColorStop(1,'rgba(15,23,42,.82)');
-  ctx.fillStyle=sg;
-  rr(s.x,246,s.w,32,11);ctx.fill();
-  ctx.strokeStyle='rgba(148,163,184,.28)';ctx.lineWidth=1;rr(s.x,246,s.w,32,11);ctx.stroke();
-  ctx.fillStyle='white';
-  ctx.font='900 13px Arial';
-  ctx.textAlign='center';
-  ctx.fillText(s.text,s.x+s.w/2,267);
+
+stats.forEach((s,i)=>{
+  ctx.fillText(s,startX+(i*spacing),260);
 });
 ctx.restore();
 
@@ -817,9 +841,9 @@ function drawEndScreen(){
   ctx.fillStyle='#fde047';
   ctx.fillText('🪙 '+coins,200,348);
 
-  bigButton(70,388,260,46,t('إعادة اللعب','Replay'),'↻','#22c55e','#15803d','start');
-  bigButton(70,443,260,46,t('الصفحة الرئيسية','Home'),'🏠','#2563eb','#1e40af','move');
-  bigButton(70,498,260,46,t('مشاركة النتيجة','Share Score'),'🔗','#0ea5e9','#0369a1','move');
+  bigButton(70,388,260,46,t('إعادة اللعب','Replay'),'↻','#22c55e','#15803d','start-glow');
+  bigButton(70,443,260,46,t('الصفحة الرئيسية','Home'),'🏠','#2563eb','#1e40af','move-fast');
+  bigButton(70,498,260,46,t('مشاركة النتيجة','Share Score'),'🔗','#0ea5e9','#0369a1','move-fast');
 
   ctx.fillStyle='rgba(15,23,42,.82)';rr(70,565,260,40,12);ctx.fill();
   ctx.setLineDash([6,5]);
