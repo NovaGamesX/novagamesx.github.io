@@ -64,18 +64,16 @@ function setupHiDPICanvas(){
   canvas.style.height='100%';
   ctx.setTransform(dpr,0,0,dpr,0,0);
   ctx.imageSmoothingEnabled=true;
-  ctx.imageSmoothingQuality=lowPowerMode?'medium':'high';
+  ctx.imageSmoothingQuality=isLowPower?'medium':'high';
   ctx.textRendering='geometricPrecision';
 }
 function redrawScreen(){
   setupHiDPICanvas();
   if(screen==='home')home();
-    else if(screen==='shop')shop();
-    else if(screen==='settings')settingsPage();
-    else if(screen==='instructions')instructionsPage();
-    else if(screen==='rate')ratePage();
-    else if(screen==='end')drawEndScreen();
-  else if(screen==='end')drawEndScreen();
+  else if(screen==='shop')shop();
+  else if(screen==='settings')settingsPage();
+  else if(screen==='instructions')instructionsPage();
+  else if(screen==='rate')ratePage();
   else if(screen==='end')drawEndScreen();
   startHomeAnimation();
 }
@@ -409,16 +407,16 @@ function home(){
   bg();
   ctx.fillStyle='rgba(0,0,0,.35)';
   ctx.fillRect(0,0,GAME_W,GAME_H);
-  panel(36,35,328,595,24);
+  panel(36,25,328,595,24);
   logo();
 
   ctx.textAlign='center';
   // إحصائيات الصفحة الرئيسية فوق زر ابدأ - داخل إطار مرتب
 ctx.save();
 ctx.fillStyle='rgba(2,6,23,.68)';
-rr(56,232,288,48,16);ctx.fill();
-ctx.strokeStyle='rgba(255,255,255,.16)';ctx.lineWidth=1.5;rr(56,232,288,48,16);ctx.stroke();
-ctx.fillStyle='rgba(255,255,255,.06)';rr(64,238,272,12,9);ctx.fill();
+rr(56,222,288,48,16);ctx.fill();
+ctx.strokeStyle='rgba(255,255,255,.16)';ctx.lineWidth=1.5;rr(56,222,288,48,16);ctx.stroke();
+ctx.fillStyle='rgba(255,255,255,.06)';rr(64,228,272,12,9);ctx.fill();
 
 const homeStats=[
   {x:250,w:74,text:'🏆 '+bestScore},
@@ -427,27 +425,27 @@ const homeStats=[
   {x:76,w:38,text:'💎 '+unlockedCars.length}
 ];
 homeStats.forEach(s=>{
-  let hg=ctx.createLinearGradient(0,242,0,272);
+  let hg=ctx.createLinearGradient(0,232,0,262);
   hg.addColorStop(0,'rgba(30,41,59,.92)');
   hg.addColorStop(1,'rgba(15,23,42,.82)');
   ctx.fillStyle=hg;
-  rr(s.x,242,s.w,30,10);ctx.fill();
-  ctx.strokeStyle='rgba(148,163,184,.25)';ctx.lineWidth=1;rr(s.x,242,s.w,30,10);ctx.stroke();
-  ctx.fillStyle='white';ctx.font='900 12px Arial';ctx.textAlign='center';ctx.fillText(s.text,s.x+s.w/2,262);
+  rr(s.x,232,s.w,30,10);ctx.fill();
+  ctx.strokeStyle='rgba(148,163,184,.25)';ctx.lineWidth=1;rr(s.x,232,s.w,30,10);ctx.stroke();
+  ctx.fillStyle='white';ctx.font='900 12px Arial';ctx.textAlign='center';ctx.fillText(s.text,s.x+s.w/2,252);
 });
 ctx.restore();
 
   // زر ابدأ فقط: حركة + إضاءة
-  bigButton(70,300,260,62,t('ابدأ اللعب','Start Game'),'▶','#22c55e','#15803d','start');
+  bigButton(70,292,260,62,t('ابدأ اللعب','Start Game'),'▶','#22c55e','#15803d','start');
 
   // الثلاثة أزرار في الرئيسية: حركة فقط بدون إضاءة
-  bigButton(70,374,260,54,t('المتجر','Shop'),'🛒','#0ea5e9','#0369a1','move');
-  bigButton(70,440,260,54,t('الإعدادات','Settings'),'⚙️','#64748b','#334155','move');
-  bigButton(70,502,260,50,t('تعليمات','How to Play'),'؟','#7c3aed','#5b21b6','move');
+  bigButton(70,366,260,54,t('المتجر','Shop'),'🛒','#0ea5e9','#0369a1','move');
+  bigButton(70,432,260,54,t('الإعدادات','Settings'),'⚙️','#64748b','#334155','move');
+  bigButton(70,494,260,50,t('تعليمات','How to Play'),'؟','#7c3aed','#5b21b6','move');
 
   
   // إعلان في منتصف أسفل الصفحة (تحت زر التعليمات بمسافة)
-drawAdSlot(80,585,240,28,t('📢 إعلان','📢 Ad'));
+drawAdSlot(80,580,240,28,t('📢 إعلان','📢 Ad'));
   ctx.textAlign='start';
 }
 function setMenu(){leftBtn.style.display='none';rightBtn.style.display='none';startBtn.style.display='none';rewardBtn.style.display='none';applyLang()}
